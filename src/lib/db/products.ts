@@ -39,11 +39,6 @@ export const getById = async (id: number): Promise<Product> => {
   return response.data;
 };
 
-export const getByName = async (name: string): Promise<Product> => {
-  const response = await instance.get<Product>(`/${route}/name/${name}`);
-  return response.data;
-};
-
 export const create = async (data: CreateProductDTO): Promise<string> => {
   const response = await instance.post<
     string,
