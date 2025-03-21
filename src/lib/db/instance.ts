@@ -1,9 +1,12 @@
 import { env } from '@/data/env/server';
+import { setupCache } from 'axios-cache-interceptor';
 import axios from 'axios';
 
-const instance = axios.create({
-  baseURL: env.DB_BASE_URL,
-});
+const instance = setupCache(
+  axios.create({
+    baseURL: env.DB_BASE_URL,
+  })
+);
 
 if (env.NODE_ENV === 'development') {
   instance.interceptors.request.use((request) => {
