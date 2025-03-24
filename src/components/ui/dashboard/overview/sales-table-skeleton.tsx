@@ -1,3 +1,5 @@
+'use client';
+
 import { DataTableSkeleton } from '../../data-table';
 import { SaleSkeleton, skeletonColumns } from './sales-columns';
 

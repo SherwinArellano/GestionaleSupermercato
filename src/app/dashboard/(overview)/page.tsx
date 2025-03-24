@@ -9,8 +9,6 @@ import { Suspense } from 'react';
 import { SalesTableSkeleton } from '@/components/ui/dashboard/overview/sales-table-skeleton';
 import { SalesTable } from '@/components/ui/dashboard/overview/sales-table';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: 'Overview',
 };
