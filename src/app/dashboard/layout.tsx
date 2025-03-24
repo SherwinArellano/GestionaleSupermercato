@@ -64,7 +64,7 @@ async function UserAppSidebar() {
     <AppSidebar
       user={{
         name: `${user.name} ${user.surname}`,
-        avatar: '/',
+        avatar: user.image ?? '/',
         avatarFallback: initials,
         email: user.email,
         role: user.role,

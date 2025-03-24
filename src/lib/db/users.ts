@@ -9,7 +9,9 @@ export const users: User[] = [
     operatorCode: '53d377d0b552b97f3bae71330874414d',
     password: '$2b$10$Z/NrIFiP2Nu0XKZiApO4yu1AUegMHqIWhfbtZjbiroEaBILfdZC5G',
     role: 'admin',
-  },
+    image:
+      'https://lh3.googleusercontent.com/ogw/AF2bZyhKxTjxBu6zYlgeK5tWjAz79wnYLo0FAcmS7u9n_AFSjY0',
+  } as User,
   {
     email: 'm.mantovani@esis-italia.com',
     name: 'Michael',
