@@ -3,7 +3,6 @@ import { columns } from './products-column';
 import { Product } from '@/types/db';
 import { isAxiosError } from 'axios';
 import { DataTable } from '../../data-table';
-import { unstable_cacheTag as cacheTag } from 'next/cache';
 
 type ProductsTableProps = {
   search: string;
@@ -18,10 +17,6 @@ export async function ProductsTable({
   order,
   sort,
 }: ProductsTableProps) {
-  'use cache';
-
-  cacheTag('products');
-
   let products: Product[];
   let totalPages = 1;
   let isError = false;

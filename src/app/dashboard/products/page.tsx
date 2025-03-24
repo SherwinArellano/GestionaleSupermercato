@@ -5,10 +5,11 @@ import { ProductsTable } from '@/components/ui/dashboard/products/products-table
 import { ProductsTableSkeleton } from '@/components/ui/dashboard/products/products-table-skeleton';
 import { SearchInput } from '@/components/ui/data-table';
 import { env } from '@/data/env/server';
-import { Plus } from 'lucide-react';
+import { Plus, RefreshCcw } from 'lucide-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { revalidateTag, unstable_cacheTag as cacheTag } from 'next/cache';
 
 export const metadata: Metadata = {
   title: 'Products',
@@ -25,10 +26,6 @@ export default async function ProductsPage(props: {
   searchParams?: Promise<QueryParams>;
 }) {
   const searchParams = await props.searchParams;
-  const search = searchParams?.search ?? '';
-  const order = searchParams?.order ?? 'asc';
-  const sort = searchParams?.sort ?? 'name';
-  const currentPage = Number(searchParams?.page) || 1;
 
   return (
     <>
@@ -38,6 +35,18 @@ export default async function ProductsPage(props: {
         <div className="w-full min-w-0">
           <div className="mb-4 flex items-center gap-4">
             <SearchInput className="flex-1" placeholder="Find products..." />
+
+            <Button
+              type="button"
+              variant="outline"
+              className="cursor-pointer"
+              onClick={async () => {
+                'use server';
+                revalidateTag('products');
+              }}
+            >
+              <RefreshCcw />
+            </Button>
 
             <Button
               type="button"
@@ -52,17 +61,7 @@ export default async function ProductsPage(props: {
             </Button>
           </div>
 
-          <Suspense
-            key={search + currentPage + order + sort}
-            fallback={<ProductsTableSkeleton />}
-          >
-            <ProductsTable
-              search={search}
-              currentPage={currentPage}
-              order={order}
-              sort={sort}
-            />
-          </Suspense>
+          <Suspended searchParams={searchParams} />
 
           {env.NODE_ENV === 'development' && (
             <PopulateProductsButton className="hidden" />
@@ -70,5 +69,40 @@ export default async function ProductsPage(props: {
         </div>
       </main>
     </>
+  );
+}
+
+async function Suspended({
+  searchParams,
+}: {
+  searchParams: QueryParams | undefined;
+}) {
+  'use cache';
+
+  cacheTag('products');
+
+  // When cacheTag revalidates, the `now` changes
+  // makine Suspense to rerender.
+  // This is to trigger skeleton loading when
+  // the user presses on the refresh button.
+  const now = Date.now();
+
+  const search = searchParams?.search ?? '';
+  const order = searchParams?.order ?? 'asc';
+  const sort = searchParams?.sort ?? 'name';
+  const currentPage = Number(searchParams?.page) || 1;
+
+  return (
+    <Suspense
+      key={now + search + currentPage + order + sort}
+      fallback={<ProductsTableSkeleton />}
+    >
+      <ProductsTable
+        search={search}
+        currentPage={currentPage}
+        order={order}
+        sort={sort}
+      />
+    </Suspense>
   );
 }
