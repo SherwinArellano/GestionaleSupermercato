@@ -3,7 +3,7 @@
 import db from '@/lib/db';
 import { ProductSchema, ProductValues } from '@/lib/entities/product';
 import { RawFormData } from '@/types/utils';
-import { revalidatePath } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 import { ZodError } from 'zod';
 
 type FormError = Record<string, { message: string }>;
@@ -78,8 +78,7 @@ export async function createProduct(
     message = 'Internal server error. Failed to create new product.';
   }
 
-  revalidatePath('/dashboard');
-  revalidatePath('/dashboard/products');
+  revalidateTag('products');
 
   return {
     success,
@@ -115,8 +114,7 @@ export async function updateProduct(
       category: { name: category },
     });
     success = true;
-    revalidatePath('/dashboard');
-    revalidatePath('/dashboard/products');
+    revalidateTag('products');
   } catch {
     message = `Internal server error. Failed to update product.`;
   }
@@ -141,8 +139,7 @@ export async function deleteProduct(
     message = 'Internal server error. Failed to delete product.';
   }
 
-  revalidatePath('/dashboard');
-  revalidatePath('/dashboard/products');
+  revalidateTag('products');
 
   return {
     message,

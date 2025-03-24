@@ -5,8 +5,13 @@ import { isAxiosError } from 'axios';
 import { Banknote, Factory, LucideIcon, Package, Users } from 'lucide-react';
 import { ShowToast } from './show-toast';
 import { users } from '@/lib/db/users';
+import { unstable_cacheTag as cacheTag } from 'next/cache';
 
 export async function CardWrapper() {
+  'use cache';
+
+  cacheTag('products');
+
   let productsCount: number;
   let isError = false;
 
