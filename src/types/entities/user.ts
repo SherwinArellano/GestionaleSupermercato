@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'manager' | 'cashier';
+import { Role } from '@/types/roles';
 
 export interface User {
   operatorCode: string;
@@ -6,5 +6,5 @@ export interface User {
   surname: string;
   email: string;
   password: string;
-  role: UserRole;
+  role: Role;
 }
