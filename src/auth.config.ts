@@ -1,6 +1,7 @@
 import 'next-auth/jwt';
 import type { DefaultSession, NextAuthConfig } from 'next-auth';
 import { User as IUser } from './types/entities/user';
+import { checkUrlPermission } from './authorization';
 
 type AuthUser = Omit<IUser, 'password'>;
 
@@ -27,8 +28,20 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+
       if (isOnDashboard) {
-        if (isLoggedIn) return true;
+        const path = nextUrl.pathname.substring('/dashboard'.length);
+        if (isLoggedIn) {
+          if (!checkUrlPermission(auth.user.role, path)) {
+            if (auth.user.role === 'manager')
+              return Response.redirect(new URL('/dashboard/products', nextUrl));
+            if (auth.user.role === 'cashier')
+              return Response.redirect(new URL('/dashboard/sales', nextUrl));
+          }
+
+          return true;
+        }
+
         return false; // Redirect unauthenticated users to login page
       } else if (isLoggedIn) {
         return Response.redirect(new URL('/dashboard', nextUrl));

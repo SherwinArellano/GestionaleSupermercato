@@ -1,6 +1,16 @@
 import { auth } from '@/auth';
 import { AppSidebar } from '@/components/ui/dashboard/app-sidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarUser } from '@/components/ui/dashboard/sidebar-user';
+import {
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarProvider,
+} from '@/components/ui/sidebar';
+import { Sidebar } from 'lucide-react';
 import { ReactNode, Suspense } from 'react';
 
 export default async function DashboardLayout({
@@ -21,14 +31,26 @@ export default async function DashboardLayout({
 
 function AppSidebarSkeleton() {
   return (
-    <AppSidebar
-      user={{
-        name: `Loading...`,
-        avatar: '/',
-        avatarFallback: 'LO',
-        email: `loading@email`,
-      }}
-    />
+    <Sidebar>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>SupermarketOS</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu></SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter>
+        <SidebarUser
+          user={{
+            avatar: '/',
+            avatarFallback: 'LO',
+            email: 'Loading...',
+            name: 'Loading...',
+          }}
+        />
+      </SidebarFooter>
+    </Sidebar>
   );
 }
 
@@ -45,6 +67,7 @@ async function UserAppSidebar() {
         avatar: '/',
         avatarFallback: initials,
         email: user.email,
+        role: user.role,
       }}
     />
   );

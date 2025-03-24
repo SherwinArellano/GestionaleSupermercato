@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { SidebarUser, SidebarUserProps } from './sidebar-user';
 import Link from 'next/link';
+import { checkUrlPermission } from '@/authorization';
+import { Role } from '@/types/roles';
 
 export const items = [
   {
@@ -71,10 +73,10 @@ export const items = [
   },
 ];
 
-export function AppSidebar({
+export async function AppSidebar({
   user,
   ...props
-}: React.ComponentProps<'div'> & SidebarUserProps) {
+}: React.ComponentProps<'div'> & SidebarUserProps & { user: { role: Role } }) {
   return (
     <Sidebar {...props}>
       <SidebarContent>
@@ -82,16 +84,18 @@ export function AppSidebar({
           <SidebarGroupLabel>SupermarketOS</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={`/dashboard${item.url}`}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items
+                .filter(({ url }) => checkUrlPermission(user.role, url))
+                .map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link href={`/dashboard${item.url}`}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
