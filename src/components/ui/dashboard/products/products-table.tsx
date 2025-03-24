@@ -22,14 +22,14 @@ export async function ProductsTable({
   let isError = false;
 
   try {
-    const data = await db.products.get();
+    const data = await db.products.get({ page: 0, name: search });
     products = data.content;
 
     // Since query functionalities are still limited in the backend
     // then manually get all products:
     const promises: ReturnType<typeof db.products.get>[] = [];
     for (let i = 1; i < data.totalPages; i++)
-      promises.push(db.products.get({ page: i }));
+      promises.push(db.products.get({ page: i, name: search }));
     (await Promise.all(promises)).forEach(({ content }) =>
       products.push(...content)
     );
