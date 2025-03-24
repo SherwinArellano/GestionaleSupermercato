@@ -5,16 +5,29 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Using the canary version of NextJS with DynamicIO gives me
+ * problem regarding a "client" component.
+ *
+ * Oh it knows it's a client component because when I put
+ * "use cache", it tells me that this is a client component.
+ *
+ * In any case, it wants the radix's tooltip provider to be
+ * surrounded in a Suspense boundary so this is more like a
+ * fix to be able to build this NextJS project.
+ */
 function TooltipProvider({
   delayDuration = 0,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   return (
-    <TooltipPrimitive.Provider
-      data-slot="tooltip-provider"
-      delayDuration={delayDuration}
-      {...props}
-    />
+    <React.Suspense>
+      <TooltipPrimitive.Provider
+        data-slot="tooltip-provider"
+        delayDuration={delayDuration}
+        {...props}
+      />
+    </React.Suspense>
   );
 }
 
