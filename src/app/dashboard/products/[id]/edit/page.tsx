@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
 import { EditProductForm } from '@/components/ui/dashboard/products/edit-form';
 import db from '@/lib/db';
+import { Product } from '@/types/db';
+import { notFound } from 'next/navigation';
 
 const breadcrumbs: Breadcrumb[] = [
   {
@@ -19,7 +21,13 @@ export default async function CreateProductPage(props: {
 }) {
   const params = await props.params;
   const id = params.id;
-  const product = await db.products.getById(Number(id));
+  let product: Product | undefined;
+
+  try {
+    product = await db.products.getById(Number(id));
+  } catch {
+    notFound();
+  }
 
   return (
     <>
