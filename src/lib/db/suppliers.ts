@@ -7,7 +7,13 @@ import {
 import { AxiosError } from 'axios';
 
 // For now I'm hardcoding suppliers since backend doesn't currently support them.
-const suppliers: Supplier[] = [
+// This trick persists data in memory storage when going through different imports
+declare global {
+  // eslint-disable-next-line no-var
+  var suppliers: Supplier[];
+}
+
+globalThis.suppliers = globalThis.suppliers ?? [
   {
     id: 1,
     name: 'Global Electronics Inc.',
