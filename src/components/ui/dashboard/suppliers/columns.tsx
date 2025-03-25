@@ -61,9 +61,7 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
     {
       accessorKey: 'email',
       header: () => <SortTableHead title="Email" value="email" />,
-      cell: ({ row }) => (
-        <div className="ml-3 capitalize">{row.getValue('email')}</div>
-      ),
+      cell: ({ row }) => <div className="ml-3">{row.getValue('email')}</div>,
     },
     {
       accessorKey: 'email',
@@ -81,7 +79,7 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
       accessorKey: 'phoneNumber',
       header: () => <SortTableHead title="Phone Number" value="phoneNumber" />,
       cell: ({ row }) => (
-        <div className="ml-3 capitalize">{row.getValue('phoneNumber')}</div>
+        <div className="ml-3">{row.getValue('phoneNumber')}</div>
       ),
     },
     {
