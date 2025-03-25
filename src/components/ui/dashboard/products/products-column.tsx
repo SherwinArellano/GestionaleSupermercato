@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Package } from 'lucide-react';
+import { Copy, MoreHorizontal, Package } from 'lucide-react';
 import {
   ColumnsBuilder,
   SortTableHead,
@@ -155,6 +155,14 @@ function ProductDropdownMenu({ product }: { product: Product }) {
     },
   });
 
+  const copyId = () => {
+    navigator.clipboard.writeText(product.id.toString());
+    toast('Copied id', {
+      icon: <Copy />,
+      description: `${product.name} id has been saved to clipboard.`,
+    });
+  };
+
   const canEdit =
     session?.user && checkPermission(session.user.role, 'edit-product');
 
@@ -172,11 +180,7 @@ function ProductDropdownMenu({ product }: { product: Product }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => navigator.clipboard.writeText(product.id.toString())}
-          >
-            Copy product ID
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={copyId}>Copy product ID</DropdownMenuItem>
 
           {(canEdit || canDelete) && <DropdownMenuSeparator />}
 
