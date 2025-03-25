@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
 import { SearchInput } from '@/components/ui/data-table';
-import { Plus, RefreshCcw } from 'lucide-react';
+import { CircleAlert, Plus, RefreshCcw } from 'lucide-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -10,6 +10,7 @@ import { auth } from '@/auth';
 import { checkPermission } from '@/authorization';
 import { SuppliersTableSkeleton } from '@/components/ui/dashboard/suppliers/table-skeleton';
 import { SuppliersTable } from '@/components/ui/dashboard/suppliers/table';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export const metadata: Metadata = {
   title: 'Suppliers',
@@ -35,6 +36,16 @@ export default async function SuppliersPage(props: {
 
       <main className="grid gap-6 p-6">
         <div className="w-full min-w-0">
+          {/* IN-MEMORY STORAGE ALERT */}
+          <Alert className="bg-accent text-accent-foreground mb-4">
+            <CircleAlert className="h-4 w-4" />
+            <AlertTitle>Warning</AlertTitle>
+            <AlertDescription>
+              Suppliers data are saved using in memory storage. Any additions
+              and/or modifications will be gone if the website redeploys.
+            </AlertDescription>
+          </Alert>
+
           <div className="mb-4 flex items-center gap-4">
             <SearchInput className="flex-1" placeholder="Find suppliers..." />
 
