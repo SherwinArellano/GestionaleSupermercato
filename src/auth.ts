@@ -5,7 +5,7 @@ import { UserSchema } from '@/lib/entities/user';
 import db from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
-export const { auth, signIn, signOut } = NextAuth({
+export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   providers: [
     Credentials({

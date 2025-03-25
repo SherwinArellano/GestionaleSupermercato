@@ -25,9 +25,9 @@ export default async function DashboardLayout({
         <UserAppSidebar />
       </Suspense>
 
-      <Suspense>
-        <MainContent>{children}</MainContent>
-      </Suspense>
+      <SessionProvider>
+        <div className="flex flex-1 flex-col">{children}</div>
+      </SessionProvider>
     </SidebarProvider>
   );
 }
@@ -73,15 +73,5 @@ async function UserAppSidebar() {
         role: user.role,
       }}
     />
-  );
-}
-
-async function MainContent({ children }: { children: ReactNode }) {
-  const session = await auth()!;
-
-  return (
-    <SessionProvider session={session}>
-      <div className="flex flex-1 flex-col">{children}</div>
-    </SessionProvider>
   );
 }
