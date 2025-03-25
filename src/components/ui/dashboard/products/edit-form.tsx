@@ -1,7 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -13,18 +12,20 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Euro, Package, Tag } from 'lucide-react';
-import { useActionState } from 'react';
-import { ProductFormState, updateProduct } from './actions';
+import { updateProduct } from './actions';
 import { ProductSchema, ProductValues } from '@/lib/entities/product';
 import { toast } from 'sonner';
 import { Product } from '@/types/db';
 import { redirect } from 'next/navigation';
+import { FormState } from '@/types/form';
+import { useForm } from '@/hooks/use-form';
+import { ScreenSpinner } from '../../spinner';
 
 const resolver = zodResolver(ProductSchema);
 
 export function EditProductForm(props: { product: Product }) {
   const product = props.product;
-  const initialState: ProductFormState = {
+  const initialState: FormState<ProductValues> = {
     message: '',
     success: false,
     values: {
@@ -33,32 +34,28 @@ export function EditProductForm(props: { product: Product }) {
       category: product.category.name,
     },
   };
-  const [state, formAction] = useActionState(
-    async (prevState: ProductFormState, formData: FormData) => {
-      const result = await updateProduct(product.id, prevState, formData);
-      if (result.success) {
-        toast('Product updated', {
-          icon: <Package />,
-          description: result.message,
-        });
-        redirect('/dashboard/products');
-      } else {
-        toast.error(result.message);
-      }
-      return prevState;
-    },
-    initialState
-  );
 
-  const form = useForm<ProductValues>({
+  const { form, formAction, isPending } = useForm({
     resolver,
-    errors: state.errors,
-    values: state.values,
+    initialState,
+    action: updateProduct.bind(null, product.id),
+    onSuccess: ({ message }) => {
+      toast('Product updated', {
+        icon: <Package />,
+        description: message,
+      });
+      redirect('/dashboard/products');
+    },
+    onError: ({ message }) => {
+      toast.error(message);
+    },
   });
 
   return (
     <Form {...form}>
       <form action={formAction} className="space-y-8">
+        {isPending && <ScreenSpinner label="Updating product" />}
+
         <FormField
           control={form.control}
           name="name"

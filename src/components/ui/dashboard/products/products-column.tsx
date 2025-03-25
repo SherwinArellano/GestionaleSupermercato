@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Package } from 'lucide-react';
 import {
   ColumnsBuilder,
   SortTableHead,
@@ -28,10 +28,13 @@ import {
 } from '@/components/ui/data-table';
 import { Product } from '@/types/db';
 import { currencyFormatter } from '@/lib/utils';
-import { useActionState } from 'react';
 import { deleteProduct } from './actions';
 import Link from 'next/link';
 import { Skeleton } from '../../skeleton';
+import { useSession } from 'next-auth/react';
+import { checkPermission } from '@/authorization';
+import { useActionForm } from '@/hooks/use-form';
+import { toast } from 'sonner';
 
 export type ProductSkeleton = {
   name: number;
@@ -138,11 +141,25 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
 export { columns, skeletonColumns };
 
 function ProductDropdownMenu({ product }: { product: Product }) {
-  const deleteProductWithId = deleteProduct.bind(null, product.id);
-  const formAction = useActionState(deleteProductWithId, {
-    message: '',
-    success: false,
-  })[1];
+  const { data: session } = useSession();
+  const { formAction } = useActionForm({
+    action: deleteProduct.bind(null, product.id),
+    onSuccess: ({ message }) => {
+      toast('Product deleted', {
+        icon: <Package />,
+        description: message,
+      });
+    },
+    onError: ({ message }) => {
+      toast.error(message);
+    },
+  });
+
+  const canEdit =
+    session?.user && checkPermission(session.user.role, 'edit-product');
+
+  const canDelete =
+    session?.user && checkPermission(session.user.role, 'delete-product');
 
   return (
     <AlertDialog>
@@ -160,14 +177,20 @@ function ProductDropdownMenu({ product }: { product: Product }) {
           >
             Copy product ID
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href={`/dashboard/products/${product.id}/edit`}>Edit</Link>
-          </DropdownMenuItem>
 
-          <AlertDialogTrigger asChild>
-            <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-          </AlertDialogTrigger>
+          {(canEdit || canDelete) && <DropdownMenuSeparator />}
+
+          {canEdit && (
+            <DropdownMenuItem asChild>
+              <Link href={`/dashboard/products/${product.id}/edit`}>Edit</Link>
+            </DropdownMenuItem>
+          )}
+
+          {canDelete && (
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+            </AlertDialogTrigger>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
       <AlertDialogContent>

@@ -1,7 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -13,39 +12,40 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Euro, Package, Tag } from 'lucide-react';
-import { useActionState } from 'react';
-import { createProduct, ProductFormState } from './actions';
+import { addProduct } from './actions';
 import { ProductSchema, ProductValues } from '@/lib/entities/product';
 import { toast } from 'sonner';
 import { ScreenSpinner } from '../../spinner';
+import { FormState } from '@/types/form';
+import { useForm } from '@/hooks/use-form';
 
 const resolver = zodResolver(ProductSchema);
 
-export function AddProductForm() {
-  const initialState: ProductFormState = {
-    message: '',
-    success: false,
-    values: { name: '', sellingPrice: 0, category: '' },
-  };
-  const [state, formAction, isPending] = useActionState(
-    async (prevState: ProductFormState, formData: FormData) => {
-      const result = await createProduct(prevState, formData);
-      if (result.success) {
-        form.reset();
-        toast('Product created', {
-          icon: <Package />,
-          description: result.message,
-        });
-      }
-      return result;
-    },
-    initialState
-  );
+const initialFormState: FormState<ProductValues> = {
+  message: '',
+  success: false,
+  values: {
+    name: '',
+    category: '',
+    sellingPrice: 0,
+  },
+};
 
-  const form = useForm<ProductValues>({
+export function AddProductForm() {
+  const { form, formAction, isPending } = useForm({
     resolver,
-    errors: state.errors,
-    values: state.values,
+    action: addProduct,
+    initialState: initialFormState,
+    onSuccess: ({ message }, form) => {
+      form.reset();
+      toast('Product created', {
+        icon: <Package />,
+        description: message,
+      });
+    },
+    onError: ({ message }) => {
+      toast.error(message);
+    },
   });
 
   return (

@@ -1,148 +1,180 @@
 'use server';
 
+import { isAuthorized } from '@/lib/authorization';
 import db from '@/lib/db';
 import { ProductSchema, ProductValues } from '@/lib/entities/product';
-import { RawFormData } from '@/types/utils';
+import { formatZodErrors } from '@/lib/utils';
+import {
+  ExtractRawValues,
+  ExtractValues,
+  FormState,
+  GetEmptyValues,
+} from '@/types/form';
 import { revalidateTag } from 'next/cache';
-import { ZodError } from 'zod';
 
-type FormError = Record<string, { message: string }>;
-
-export type ProductFormState = {
-  message: string;
-  values: ProductValues;
-  errors?: FormError;
-  success: boolean;
+const extractRawValues: ExtractRawValues<ProductValues> = (formData) => {
+  return {
+    name: formData.get('name')?.toString(),
+    sellingPrice: formData.get('sellingPrice')?.toString(),
+    category: formData.get('category')?.toString(),
+  };
 };
 
-function getRawProductFormData(formData: FormData): RawFormData<ProductValues> {
+const extractValues: ExtractValues<ProductValues> = (rawData) => {
   return {
-    name: formData.get('name'),
-    sellingPrice: formData.get('sellingPrice'),
-    category: formData.get('category'),
-  } as RawFormData<ProductValues>;
-}
-
-function parseFormErrors(error: ZodError): FormError {
-  const errors: FormError = {};
-  for (const { path, message } of error.issues || []) {
-    errors[path.join('.')] = { message };
-  }
-  return errors;
-}
-
-function buildProductFormErrorObject(
-  message: string,
-  rawFormData: RawFormData<ProductValues>,
-  error: ZodError
-) {
-  return {
-    errors: parseFormErrors(error),
-    success: false,
-    message,
-    values: {
-      name: rawFormData.name ?? '',
-      category: rawFormData.category ?? '',
-      sellingPrice: parseFloat(rawFormData.sellingPrice ?? ''),
-    },
+    name: rawData.name ?? '',
+    category: rawData.category ?? '',
+    sellingPrice: parseFloat(rawData.sellingPrice ?? '') || 0,
   };
-}
+};
 
-export async function createProduct(
-  prevState: ProductFormState,
+const getProductEmptyValues: GetEmptyValues<ProductValues> = () => {
+  return {
+    name: '',
+    category: '',
+    sellingPrice: 0,
+  };
+};
+
+export async function addProduct(
+  prevState: FormState<ProductValues>,
   formData: FormData
-): Promise<ProductFormState> {
-  const rawFormData = getRawProductFormData(formData);
-  const validatedFields = ProductSchema.safeParse(rawFormData);
+): Promise<FormState<ProductValues>> {
+  // Extract and normalize form values
+  const rawData = extractRawValues(formData);
+  const values = extractValues(rawData);
+
+  // Validate values
+  const validatedFields = ProductSchema.safeParse(rawData);
   if (!validatedFields.success) {
-    return buildProductFormErrorObject(
-      'Missing or invalid fields. Failed to create new product.',
-      rawFormData,
-      validatedFields.error
-    );
+    return {
+      success: false,
+      message: 'Missing or invalid fields. Failed to add new product.',
+      values,
+      errors: formatZodErrors(validatedFields.error),
+    };
   }
 
-  const { name, sellingPrice, category } = validatedFields.data;
-  const sellingPriceInCents = sellingPrice * 100;
+  // Check if authorized
+  const authorized = await isAuthorized('create-product');
+  if (!authorized) {
+    return {
+      values,
+      success: false,
+      message: `You don't have permission to do that.`,
+    };
+  }
 
-  let message: string;
-  let success = false;
+  // Create product
   try {
-    message = await db.products.create({
+    const { name, sellingPrice, category } = validatedFields.data;
+    const sellingPriceInCents = sellingPrice * 100;
+
+    const message = await db.products.create({
       name,
       sellingPrice: sellingPriceInCents,
       category: { name: category },
     });
-    success = true;
+
+    revalidateTag('products');
+
+    return {
+      message,
+      success: true,
+      values: getProductEmptyValues(),
+    };
   } catch {
-    message = 'Internal server error. Failed to create new product.';
+    return {
+      values,
+      success: false,
+      message: 'Internal server error. Failed to create new product.',
+    };
   }
-
-  revalidateTag('products');
-
-  return {
-    success,
-    message,
-    values: { name: '', sellingPrice: 0, category: '' },
-  };
 }
 
 export async function updateProduct(
   id: number,
-  prevState: ProductFormState,
+  prevState: FormState<ProductValues>,
   formData: FormData
-): Promise<ProductFormState> {
-  const rawFormData = getRawProductFormData(formData);
-  const validatedFields = ProductSchema.safeParse(rawFormData);
+): Promise<FormState<ProductValues>> {
+  // Extract and normalize form values
+  const rawData = extractRawValues(formData);
+  const values = extractValues(rawData);
+
+  // Validate values
+  const validatedFields = ProductSchema.safeParse(rawData);
   if (!validatedFields.success) {
-    return buildProductFormErrorObject(
-      'Missing or invalid fields. Failed to update product.',
-      rawFormData,
-      validatedFields.error
-    );
+    return {
+      success: false,
+      message: 'Missing or invalid fields. Failed to update product.',
+      values,
+      errors: formatZodErrors(validatedFields.error),
+    };
   }
 
-  const { name, sellingPrice, category } = validatedFields.data;
-  const sellingPriceInCents = sellingPrice * 100;
+  // Check if authorized
+  const authorized = await isAuthorized('edit-product');
+  if (!authorized) {
+    return {
+      values,
+      success: false,
+      message: `You don't have permission to do that.`,
+    };
+  }
 
-  let message: string;
-  let success = false;
+  // Update product
   try {
-    message = await db.products.update(id, {
+    const { name, sellingPrice, category } = validatedFields.data;
+    const sellingPriceInCents = sellingPrice * 100;
+
+    const message = await db.products.update(id, {
       name,
       sellingPrice: sellingPriceInCents,
       category: { name: category },
     });
-    success = true;
-    revalidateTag('products');
-  } catch {
-    message = `Internal server error. Failed to update product.`;
-  }
 
-  return {
-    success,
-    message,
-    values: { name: '', sellingPrice: 0, category: '' },
-  };
+    revalidateTag('products');
+
+    return {
+      message,
+      success: true,
+      values: getProductEmptyValues(),
+    };
+  } catch {
+    return {
+      values,
+      success: false,
+      message: 'Internal server error. Failed to update product.',
+    };
+  }
 }
 
 export async function deleteProduct(
   id: number
-): Promise<Omit<ProductFormState, 'values' | 'errors'>> {
-  let message: string;
-  let success = false;
-
-  try {
-    message = await db.products.deleteById(id);
-    success = true;
-  } catch {
-    message = 'Internal server error. Failed to delete product.';
+): Promise<Omit<FormState<ProductValues>, 'values' | 'errors'>> {
+  // Check if authorized
+  const authorized = await isAuthorized('delete-product');
+  if (!authorized) {
+    return {
+      success: false,
+      message: `You don't have permission to do that.`,
+    };
   }
 
-  revalidateTag('products');
+  // Delete product
+  try {
+    const message = await db.products.deleteById(id);
 
-  return {
-    message,
-    success,
-  };
+    revalidateTag('products');
+
+    return {
+      message,
+      success: true,
+    };
+  } catch {
+    return {
+      message: 'Internal server error. Failed to delete product.',
+      success: false,
+    };
+  }
 }

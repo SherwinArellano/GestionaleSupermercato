@@ -10,6 +10,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { revalidateTag, unstable_cacheTag as cacheTag } from 'next/cache';
+import { auth } from '@/auth';
+import { checkPermission } from '@/authorization';
 
 export const metadata: Metadata = {
   title: 'Products',
@@ -25,6 +27,8 @@ type QueryParams = {
 export default async function ProductsPage(props: {
   searchParams?: Promise<QueryParams>;
 }) {
+  const session = await auth();
+  const user = session?.user;
   const searchParams = await props.searchParams;
 
   return (
@@ -48,17 +52,19 @@ export default async function ProductsPage(props: {
               <RefreshCcw />
             </Button>
 
-            <Button
-              type="button"
-              variant="default"
-              className="cursor-pointer"
-              asChild
-            >
-              <Link href="/dashboard/products/add">
-                <Plus />
-                New Product
-              </Link>
-            </Button>
+            {user && checkPermission(user.role, 'create-product') && (
+              <Button
+                type="button"
+                variant="default"
+                className="cursor-pointer"
+                asChild
+              >
+                <Link href="/dashboard/products/add">
+                  <Plus />
+                  New Product
+                </Link>
+              </Button>
+            )}
           </div>
 
           <Suspended searchParams={searchParams} />

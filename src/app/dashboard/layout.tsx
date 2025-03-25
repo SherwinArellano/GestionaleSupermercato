@@ -11,6 +11,7 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { Sidebar } from 'lucide-react';
+import { SessionProvider } from 'next-auth/react';
 import { ReactNode, Suspense } from 'react';
 
 export default async function DashboardLayout({
@@ -24,7 +25,9 @@ export default async function DashboardLayout({
         <UserAppSidebar />
       </Suspense>
 
-      <div className="flex flex-1 flex-col">{children}</div>
+      <Suspense>
+        <MainContent>{children}</MainContent>
+      </Suspense>
     </SidebarProvider>
   );
 }
@@ -70,5 +73,15 @@ async function UserAppSidebar() {
         role: user.role,
       }}
     />
+  );
+}
+
+async function MainContent({ children }: { children: ReactNode }) {
+  const session = await auth()!;
+
+  return (
+    <SessionProvider session={session}>
+      <div className="flex flex-1 flex-col">{children}</div>
+    </SessionProvider>
   );
 }
