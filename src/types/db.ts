@@ -1,6 +1,7 @@
 export * from './entities/category';
 export * from './entities/product';
 export * from './entities/supplier';
+export * from './entities/stock';
 
 export type GetAll<Entity> = {
   data: Entity[];
