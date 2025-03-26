@@ -23,6 +23,7 @@ import {
 import { Copy, Factory, MoreHorizontal } from 'lucide-react';
 import {
   ColumnsBuilder,
+  getHeadSortState,
   SortTableHead,
   SortTableHeadSkeleton,
 } from '@/components/ui/data-table';
@@ -44,7 +45,13 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
   .addColumn(
     {
       accessorKey: 'name',
-      header: () => <SortTableHead title="Name" value="name" />,
+      header: (context) => (
+        <SortTableHead
+          title="Name"
+          value="name"
+          desc={getHeadSortState(context)}
+        />
+      ),
       cell: ({ row }) => (
         <div className="ml-3 capitalize">{row.getValue('name')}</div>
       ),
@@ -60,7 +67,13 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
   .addColumn(
     {
       accessorKey: 'email',
-      header: () => <SortTableHead title="Email" value="email" />,
+      header: (context) => (
+        <SortTableHead
+          title="Email"
+          value="email"
+          desc={getHeadSortState(context)}
+        />
+      ),
       cell: ({ row }) => <div className="ml-3">{row.getValue('email')}</div>,
     },
     {
@@ -77,7 +90,13 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
   .addColumn(
     {
       accessorKey: 'phoneNumber',
-      header: () => <SortTableHead title="Phone Number" value="phoneNumber" />,
+      header: (context) => (
+        <SortTableHead
+          title="Phone Number"
+          value="phoneNumber"
+          desc={getHeadSortState(context)}
+        />
+      ),
       cell: ({ row }) => (
         <div className="ml-3">{row.getValue('phoneNumber')}</div>
       ),
@@ -96,7 +115,13 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
   .addColumn(
     {
       accessorKey: 'address',
-      header: () => <SortTableHead title="Address" value="address" />,
+      header: (context) => (
+        <SortTableHead
+          title="Address"
+          value="address"
+          desc={getHeadSortState(context)}
+        />
+      ),
       cell: ({ row }) => (
         <div className="ml-3 capitalize">{row.getValue('address')}</div>
       ),

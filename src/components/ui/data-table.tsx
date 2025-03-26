@@ -11,7 +11,10 @@ import {
 import { Input } from '@/components/ui/input';
 import * as Tanstack from '@tanstack/react-table';
 import {
-  ArrowUpDown,
+  ArrowDown01,
+  ArrowDownAZ,
+  ArrowUp01,
+  ArrowUpAZ,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -572,12 +575,14 @@ export function SelectCheckbox<TData extends Tanstack.RowData>({
 export function SortTableHeadSkeleton({
   title,
   className,
+  number,
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
   } & {
     title: ReactNode;
+    number?: boolean;
   }) {
   return (
     <Button
@@ -587,7 +592,7 @@ export function SortTableHeadSkeleton({
       {...props}
     >
       {title}
-      <ArrowUpDown />
+      {number ? <ArrowDown01 /> : <ArrowDownAZ />}
     </Button>
   );
 }
@@ -596,6 +601,8 @@ export function SortTableHead({
   title,
   value,
   className,
+  desc,
+  number,
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
@@ -603,6 +610,8 @@ export function SortTableHead({
   } & {
     title: ReactNode;
     value: string;
+    desc?: boolean;
+    number?: boolean;
   }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -619,6 +628,10 @@ export function SortTableHead({
     replace(`${pathname}?${params.toString()}`);
   };
 
+  const alphaArrows = desc ? <ArrowUpAZ /> : <ArrowDownAZ />;
+  const numberArrows = desc ? <ArrowUp01 /> : <ArrowDown01 />;
+  const arrows = number ? numberArrows : alphaArrows;
+
   return (
     <Button
       type="button"
@@ -628,7 +641,14 @@ export function SortTableHead({
       {...props}
     >
       {title}
-      <ArrowUpDown />
+      {arrows}
     </Button>
   );
+}
+
+export function getHeadSortState<TData extends Tanstack.RowData>(
+  context: Tanstack.HeaderContext<TData, unknown>
+) {
+  const { table, header } = context;
+  return table.getState().sorting.find((sort) => sort.id === header.id)?.desc;
 }

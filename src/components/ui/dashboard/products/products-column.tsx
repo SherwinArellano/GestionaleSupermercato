@@ -23,6 +23,7 @@ import {
 import { Copy, MoreHorizontal, Package } from 'lucide-react';
 import {
   ColumnsBuilder,
+  getHeadSortState,
   SortTableHead,
   SortTableHeadSkeleton,
 } from '@/components/ui/data-table';
@@ -49,7 +50,13 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
   .addColumn(
     {
       accessorKey: 'name',
-      header: () => <SortTableHead title="Name" value="name" />,
+      header: (context) => (
+        <SortTableHead
+          title="Name"
+          value="name"
+          desc={getHeadSortState(context)}
+        />
+      ),
       cell: ({ row }) => (
         <div className="ml-3 capitalize">{row.getValue('name')}</div>
       ),
@@ -65,8 +72,13 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
   .addColumn(
     {
       accessorKey: 'category',
-      header: () => (
-        <SortTableHead title="Category" value="category" className="-ml-3" />
+      header: (context) => (
+        <SortTableHead
+          title="Category"
+          value="category"
+          className="-ml-3"
+          desc={getHeadSortState(context)}
+        />
       ),
       cell: ({ row }) => row.original.category.name,
       sortingFn: (rowA, rowB) => {
@@ -88,11 +100,13 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
   .addColumn(
     {
       accessorKey: 'sellingPrice',
-      header: () => (
+      header: (context) => (
         <SortTableHead
           title="Price"
           value="sellingPrice"
           className="float-right -mr-3"
+          desc={getHeadSortState(context)}
+          number
         />
       ),
       cell: ({ row }) => (
@@ -104,7 +118,11 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
     {
       accessorKey: 'sellingPrice',
       header: () => (
-        <SortTableHeadSkeleton title="Price" className="float-right -mr-3" />
+        <SortTableHeadSkeleton
+          title="Price"
+          className="float-right -mr-3"
+          number
+        />
       ),
       cell: ({ row }) => (
         <Skeleton
