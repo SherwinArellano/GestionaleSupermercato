@@ -10,7 +10,6 @@ import { auth } from '@/auth';
 import { checkPermission } from '@/authorization';
 import { SuppliersTableSkeleton } from '@/components/ui/dashboard/suppliers/table-skeleton';
 import { SuppliersTable } from '@/components/ui/dashboard/suppliers/table';
-import { SuppliersAlert } from '@/components/ui/dashboard/suppliers/alert';
 
 export const metadata: Metadata = {
   title: 'Suppliers',
@@ -36,8 +35,6 @@ export default async function SuppliersPage(props: {
 
       <main className="grid gap-6 p-6">
         <div className="w-full min-w-0">
-          <SuppliersAlert className="mb-4" />
-
           <div className="mb-4 flex items-center gap-4">
             <SearchInput className="flex-1" placeholder="Find suppliers..." />
 

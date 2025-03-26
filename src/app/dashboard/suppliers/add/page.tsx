@@ -2,7 +2,6 @@ import { Breadcrumb } from '@/components/ui/breadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
 import { AddSupplierForm } from '@/components/ui/dashboard/suppliers/add-form';
-import { SuppliersAlert } from '@/components/ui/dashboard/suppliers/alert';
 
 const breadcrumbs: Breadcrumb[] = [
   {
@@ -20,8 +19,6 @@ export default function CreateSupplierPage() {
       <DashboardHeader breadcrumbs={breadcrumbs} />
 
       <main className="grid gap-6 p-6">
-        <SuppliersAlert />
-
         <Card>
           <CardHeader>
             <CardTitle>Add a new supplier</CardTitle>

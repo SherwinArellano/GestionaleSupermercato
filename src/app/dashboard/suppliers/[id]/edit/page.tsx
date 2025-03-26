@@ -1,7 +1,6 @@
 import { Breadcrumb } from '@/components/ui/breadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
-import { SuppliersAlert } from '@/components/ui/dashboard/suppliers/alert';
 import { EditSupplierForm } from '@/components/ui/dashboard/suppliers/edit-form';
 import db from '@/lib/db';
 import { Supplier } from '@/types/db';
@@ -35,8 +34,6 @@ export default async function CreateSupplierPage(props: {
       <DashboardHeader breadcrumbs={breadcrumbs} />
 
       <main className="grid gap-6 p-6">
-        <SuppliersAlert />
-
         <Card>
           <CardHeader>
             <CardTitle>Editing {supplier.name}</CardTitle>
