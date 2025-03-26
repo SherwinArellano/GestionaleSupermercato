@@ -12,24 +12,34 @@ import {
 import { Input } from '@/components/ui/input';
 import { DarkModeToggle } from '../dark-mode-toggle';
 import Link from 'next/link';
-import { useActionState } from 'react';
 import { signup } from './actions';
-import { Form, FormField, FormItem, FormLabel } from '../form';
-import { useForm } from 'react-hook-form';
+import { Form, FormField, FormItem, FormLabel, FormMessage } from '../form';
 import { toast } from 'sonner';
+import { useForm } from '@/hooks/use-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { SignUpSchema, SignUpValues } from '@/lib/entities/user';
+import { FormState } from '@/types/form';
 
-const signupWrapped: typeof signup = async () => {
-  const result = await signup();
-  toast.warning(result);
-  return result;
+const resolver = zodResolver(SignUpSchema);
+
+const initialState: FormState<SignUpValues> = {
+  message: '',
+  success: false,
+  values: { operatorCode: '' },
 };
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'div'>) {
-  const formAction = useActionState(signupWrapped, undefined)[1];
-  const form = useForm();
+  const { form, formAction } = useForm({
+    resolver,
+    initialState,
+    action: signup,
+    onSuccess: ({ message }) => {
+      toast.warning(message);
+    },
+  });
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -48,7 +58,7 @@ export function SignUpForm({
             <form action={formAction}>
               <FormField
                 control={form.control}
-                name="opcode"
+                name="operatorCode"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Operator Code</FormLabel>
@@ -57,6 +67,7 @@ export function SignUpForm({
                       placeholder="e.g. 728930040aa476f94153be3c561ab548"
                       {...field}
                     />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
