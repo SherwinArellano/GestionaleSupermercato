@@ -1,70 +1,55 @@
 'use server';
 
 import { signIn, signOut } from '@/auth';
-import { UserSchema, UserValues } from '@/lib/entities/user';
-import { RawFormData } from '@/types/utils';
+import { LoginSchema, LoginValues } from '@/lib/entities/user';
+import { formatZodErrors } from '@/lib/utils';
+import { ExtractRawValues, ExtractValues, FormState } from '@/types/form';
 import { AuthError } from 'next-auth';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
-import { ZodError } from 'zod';
 
-type FormError = Record<string, { message: string }>;
-
-export type LoginFormState = {
-  message: string;
-  values: UserValues;
-  errors?: FormError;
-  success: boolean;
+const extractRawValues: ExtractRawValues<LoginValues> = (formData) => {
+  return {
+    email: formData.get('email')?.toString(),
+    password: formData.get('password')?.toString(),
+  };
 };
 
-function getRawLoginFormData(formData: FormData): RawFormData<UserValues> {
+const extractValues: ExtractValues<LoginValues> = (rawData) => {
   return {
-    email: formData.get('email'),
-    password: formData.get('password'),
-  } as RawFormData<UserValues>;
-}
-
-function parseFormErrors(error: ZodError): FormError {
-  const errors: FormError = {};
-  for (const { path, message } of error.issues || []) {
-    errors[path.join('.')] = { message };
-  }
-  return errors;
-}
-
-function buildLoginFormErrorObject(
-  message: string,
-  rawFormData: RawFormData<UserValues>,
-  error: ZodError
-): LoginFormState {
-  return {
-    errors: parseFormErrors(error),
-    success: false,
-    message,
-    values: {
-      email: rawFormData.email ?? '',
-      password: rawFormData.password ?? '',
-    },
+    email: rawData.email ?? '',
+    password: rawData.password ?? '',
   };
-}
+};
 
 export async function authenticate(
-  prevState: LoginFormState,
+  prevState: FormState<LoginValues>,
   formData: FormData
-): Promise<LoginFormState> {
-  const rawFormData = getRawLoginFormData(formData);
-  const validatedFields = UserSchema.safeParse(rawFormData);
+): Promise<FormState<LoginValues>> {
+  // Extract and normalize form values
+  const rawData = extractRawValues(formData);
+  const values = extractValues(rawData);
+
+  // Validate values
+  const validatedFields = LoginSchema.safeParse(rawData);
   if (!validatedFields.success) {
-    return buildLoginFormErrorObject(
-      'Missing or invalid fields.',
-      rawFormData,
-      validatedFields.error
-    );
+    return {
+      success: false,
+      message: 'Missing or invalid fields.',
+      values,
+      errors: formatZodErrors(validatedFields.error),
+    };
   }
 
-  let message = '';
+  // Login
   try {
     await signIn('credentials', formData);
+    return {
+      success: true,
+      message: 'Logged in successfully!',
+      values,
+    };
   } catch (error) {
+    let message = '';
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
@@ -80,14 +65,13 @@ export async function authenticate(
     } else {
       message = 'Something went wrong.';
     }
-    console.error(error);
-  }
 
-  return {
-    message,
-    success: false,
-    values: validatedFields.data,
-  };
+    return {
+      message,
+      success: false,
+      values,
+    };
+  }
 }
 
 export async function logout() {

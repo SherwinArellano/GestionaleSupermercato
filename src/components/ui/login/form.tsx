@@ -12,11 +12,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { DarkModeToggle } from '../dark-mode-toggle';
 import Link from 'next/link';
-import { useActionState } from 'react';
-import { authenticate, LoginFormState } from './actions';
+import { authenticate } from './actions';
 import { useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { UserSchema, UserValues } from '@/lib/entities/user';
+import { LoginSchema, LoginValues } from '@/lib/entities/user';
 import {
   Form,
   FormControl,
@@ -25,26 +24,16 @@ import {
   FormLabel,
   FormMessage,
 } from '../form';
-import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useForm } from '@/hooks/use-form';
+import { FormState } from '@/types/form';
 
-const resolver = zodResolver(UserSchema);
+const resolver = zodResolver(LoginSchema);
 
-const initialState: LoginFormState = {
+const initialState: FormState<LoginValues> = {
   message: '',
   success: false,
   values: { email: '', password: '' },
-};
-
-const authenticateWrapped = async (
-  prevState: LoginFormState,
-  formData: FormData
-) => {
-  const result = await authenticate(prevState, formData);
-  if (!result.success) {
-    toast.warning(result.message);
-  }
-  return result;
 };
 
 export function LoginForm({
@@ -53,15 +42,13 @@ export function LoginForm({
 }: React.ComponentPropsWithoutRef<'div'>) {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-  const [state, formAction, isPending] = useActionState(
-    authenticateWrapped,
-    initialState
-  );
-
-  const form = useForm<UserValues>({
+  const { form, formAction, isPending } = useForm({
     resolver,
-    errors: state.errors,
-    values: state.values,
+    initialState,
+    action: authenticate,
+    onError: ({ message }) => {
+      toast.warning(message);
+    },
   });
 
   return (

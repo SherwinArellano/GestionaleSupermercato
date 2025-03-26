@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
-import { UserSchema } from '@/lib/entities/user';
+import { LoginSchema } from '@/lib/entities/user';
 import db from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
@@ -10,7 +10,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
-        const parsedCredentials = UserSchema.safeParse(credentials);
+        const parsedCredentials = LoginSchema.safeParse(credentials);
 
         if (!parsedCredentials.success) return null;
 
