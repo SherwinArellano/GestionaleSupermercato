@@ -8,3 +8,5 @@ export interface User {
   password: string;
   role: Role;
 }
+
+export type LoginUserDTO = Pick<User, 'email' | 'password'>;
