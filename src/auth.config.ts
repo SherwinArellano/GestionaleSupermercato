@@ -2,6 +2,7 @@ import 'next-auth/jwt';
 import type { DefaultSession, NextAuthConfig } from 'next-auth';
 import { User as IUser } from './types/entities/user';
 import { checkUrlPermission } from './authorization';
+import { Role } from './types/roles';
 
 type AuthUser = Omit<IUser, 'password'>;
 
@@ -19,6 +20,16 @@ declare module 'next-auth/jwt' {
     user?: AuthUser;
   }
 }
+
+const roleRedirectUrls: Record<Role, string> = {
+  admin: '/dashboard',
+  manager: '/dashboard/products',
+  cashier: '/dashboard/sales',
+};
+
+export const getRoleRedirectUrl = (role: Role) => {
+  return roleRedirectUrls[role];
+};
 
 export const authConfig = {
   pages: {
@@ -44,7 +55,9 @@ export const authConfig = {
 
         return false; // Redirect unauthenticated users to login page
       } else if (isLoggedIn) {
-        return Response.redirect(new URL('/dashboard', nextUrl));
+        return Response.redirect(
+          new URL(getRoleRedirectUrl(auth.user.role), nextUrl)
+        );
       }
       return true;
     },

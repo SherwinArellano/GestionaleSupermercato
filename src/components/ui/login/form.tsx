@@ -41,7 +41,7 @@ export function LoginForm({
   ...props
 }: React.ComponentPropsWithoutRef<'div'>) {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const callbackUrl = searchParams.get('callbackUrl');
   const { form, formAction, isPending } = useForm({
     resolver,
     initialState,
@@ -99,7 +99,9 @@ export function LoginForm({
                 />
               </div>
 
-              <input type="hidden" name="redirectTo" value={callbackUrl} />
+              {callbackUrl && (
+                <input type="hidden" name="redirectTo" value={callbackUrl} />
+              )}
               <Button
                 type="submit"
                 className="w-full cursor-pointer"

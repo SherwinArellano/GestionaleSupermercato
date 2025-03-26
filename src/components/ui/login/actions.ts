@@ -1,6 +1,8 @@
 'use server';
 
 import { signIn, signOut } from '@/auth';
+import { getRoleRedirectUrl } from '@/auth.config';
+import db from '@/lib/db';
 import { LoginSchema, LoginValues } from '@/lib/entities/user';
 import { formatZodErrors } from '@/lib/utils';
 import { ExtractRawValues, ExtractValues, FormState } from '@/types/form';
@@ -42,11 +44,17 @@ export async function authenticate(
 
   // Login
   try {
-    await signIn('credentials', formData);
+    // Since signIn doesn't return the user, we get the user
+    // manually to get the role and correctly redirect to their page
+    const user = await db.users.getByEmail(values.email);
+    await signIn('credentials', {
+      redirectTo: getRoleRedirectUrl(user!.role),
+      ...values,
+    });
     return {
-      success: true,
-      message: 'Logged in successfully!',
       values,
+      success: true,
+      message: '',
     };
   } catch (error) {
     let message = '';
@@ -65,7 +73,7 @@ export async function authenticate(
     } else {
       message = 'Something went wrong.';
     }
-
+    console.log(error);
     return {
       message,
       success: false,
