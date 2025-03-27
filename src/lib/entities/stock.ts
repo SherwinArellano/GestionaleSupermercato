@@ -4,12 +4,11 @@ import { z } from 'zod';
 
 export const StockSchema = z.object({
   quantity: z.coerce
-    .number()
-    .min(0, 'Quantity is required.')
+    .number({ required_error: 'Quantity is required.' })
     .gt(0, { message: 'Please enter a quantity.' })
     .int('Quantity must be an integer.'),
-  arrivalDate: z.coerce.date(),
-  expiryDate: z.coerce.date(),
+  arrivalDate: z.coerce.date({ required_error: 'Arrival date is required.' }),
+  expiryDate: z.coerce.date({ required_error: 'Expiry date is required.' }),
   productId: z.coerce.number(),
   supplierId: z.coerce.number(),
 } satisfies Record<keyof CreateStockDTO, any>);
