@@ -26,10 +26,23 @@ import {
   FieldValues,
 } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel } from './form';
+import { Skeleton } from './skeleton';
 
 export type ComboboxItem = {
   value: string;
   label: string;
+};
+
+export type ComboboxProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> = {
+  label: string;
+  field?: ControllerRenderProps<TFieldValues, TName>;
+  placeholder: string;
+  items: ComboboxItem[];
+  isPending?: boolean;
+  onInput?: (value: string) => void;
 };
 
 export function FormCombobox<
@@ -39,16 +52,11 @@ export function FormCombobox<
   control,
   name,
   label,
-  placeholder,
-  items,
-  onInput,
-}: {
+  ...props
+}: ComboboxProps<TFieldValues, TName> & {
   control: Control<TFieldValues>;
   name: TName;
   label: string;
-  placeholder: string;
-  items: ComboboxItem[];
-  onInput?: (value: string) => void;
 }) {
   return (
     <FormField
@@ -58,13 +66,7 @@ export function FormCombobox<
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <Combobox
-              field={field}
-              label={label}
-              placeholder={placeholder}
-              items={items}
-              onInput={onInput}
-            />
+            <Combobox field={field} label={label} {...props} />
           </FormControl>
         </FormItem>
       )}
@@ -80,15 +82,11 @@ export function Combobox<
   field,
   placeholder,
   items,
+  isPending,
   onInput,
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Root> & {
-  label: string;
-  field?: ControllerRenderProps<TFieldValues, TName>;
-  placeholder: string;
-  items: ComboboxItem[];
-  onInput?: (value: string) => void;
-}) {
+}: React.ComponentProps<typeof PopoverPrimitive.Root> &
+  ComboboxProps<TFieldValues, TName>) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState('');
   const commonValue = field ? field.value : value;
@@ -99,6 +97,29 @@ export function Combobox<
     else setValue(updateValue);
     setOpen(false);
   };
+
+  let commandGroupContent: React.ReactNode;
+
+  if (isPending) {
+    commandGroupContent = <CommandGroupContentSkeleton />;
+  } else {
+    commandGroupContent = items.map((item) => (
+      <CommandItem
+        key={item.value}
+        value={item.value}
+        onSelect={handleSelect}
+        className="cursor-pointer"
+      >
+        {item.label}
+        <Check
+          className={cn(
+            'ml-auto',
+            commonValue === item.value ? 'opacity-100' : 'opacity-0'
+          )}
+        />
+      </CommandItem>
+    ));
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen} {...props}>
@@ -125,27 +146,21 @@ export function Combobox<
           />
           <CommandList>
             <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
-            <CommandGroup>
-              {items.map((item) => (
-                <CommandItem
-                  key={item.value}
-                  value={item.value}
-                  onSelect={handleSelect}
-                  className="cursor-pointer"
-                >
-                  {item.label}
-                  <Check
-                    className={cn(
-                      'ml-auto',
-                      commonValue === item.value ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            <CommandGroup>{commandGroupContent}</CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
   );
+}
+
+function CommandGroupContentSkeleton() {
+  return Array.from(Array(5)).map((_, i) => (
+    <CommandItem key={i} value={i.toString()} disabled>
+      <Skeleton
+        className="h-5"
+        style={{ width: Math.floor(Math.random() * 110 + 70) }}
+      />
+    </CommandItem>
+  ));
 }
