@@ -151,3 +151,11 @@ html.light {
     -webkit-appearance: none;
   }
 }
+
+@layer utilities {
+  /* Match popover and trigger content size (https://www.radix-ui.com/primitives/docs/components/popover#constrain-the-content-size) */
+  .popover-content {
+    width: var(--radix-popover-trigger-width);
+    max-height: var(--radix-popover-content-available-height);
+  }
+}
