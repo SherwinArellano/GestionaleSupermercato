@@ -10,3 +10,7 @@ export interface User {
 }
 
 export type LoginUserDTO = Pick<User, 'email' | 'password'>;
+
+export type CreateUserDTO = Omit<User, 'operatorCode' | 'password'>;
+
+export type UpdateUserDTO = CreateUserDTO;

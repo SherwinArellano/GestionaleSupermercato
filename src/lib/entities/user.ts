@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LoginUserDTO, User } from '@/types/entities/user';
+import { CreateUserDTO, LoginUserDTO, User } from '@/types/entities/user';
+import { RoleValues } from '@/types/roles';
 import { z } from 'zod';
 
 export const LoginSchema = z.object({
@@ -17,3 +18,10 @@ export const SignUpSchema = z.object({
 } satisfies Record<keyof Pick<User, 'operatorCode'>, any>);
 
 export type SignUpValues = z.infer<typeof SignUpSchema>;
+
+export const UserSchema = z.object({
+  name: z.string().min(1, { message: 'Name is required. ' }),
+  surname: z.string().min(1, { message: 'Surname is required. ' }),
+  email: z.string().email('Invalid email.').min(1, 'Email is required.'),
+  role: z.enum(RoleValues, { required_error: 'Role is required.' }),
+} satisfies Record<keyof CreateUserDTO, any>);
