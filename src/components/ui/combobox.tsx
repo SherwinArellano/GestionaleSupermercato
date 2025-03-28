@@ -54,6 +54,7 @@ export type ComboboxProps<
   noneFoundLabel: string;
   initialContentLabel: string;
   initialInput?: string;
+  initialValue?: string;
   field?: ControllerRenderProps<TFieldValues, TName>;
   placeholder: string;
   action: ComboboxAction;
@@ -99,6 +100,7 @@ export function Combobox<
   initialContentLabel,
   field,
   initialInput,
+  initialValue,
   action,
   placeholder,
   onInput,
@@ -108,7 +110,7 @@ export function Combobox<
   ComboboxProps<TFieldValues, TName>) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState('');
-  const [valueLabel, setValueLabel] = React.useState('');
+  const [valueLabel, setValueLabel] = React.useState(initialValue ?? '');
   const [input, setInput] = React.useState(initialInput ?? '');
   const [items, formAction, isPending] = React.useActionState(action, []);
   const searchParams = useSearchParams();

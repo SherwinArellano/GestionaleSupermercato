@@ -1,10 +1,11 @@
-'use server';
-
 import { Breadcrumb } from '@/components/ui/breadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
-import { AddStockForm } from '@/components/ui/dashboard/stocks/add-form';
-import { productsAction, suppliersAction } from '../actions';
+import { EditStockForm } from '@/components/ui/dashboard/stocks/edit-form';
+import db from '@/lib/db';
+import { PStock } from '@/types/db';
+import { notFound } from 'next/navigation';
+import { productsAction, suppliersAction } from '../../actions';
 
 const breadcrumbs: Breadcrumb[] = [
   {
@@ -12,7 +13,7 @@ const breadcrumbs: Breadcrumb[] = [
     href: '/dashboard/stocks',
   },
   {
-    label: 'Add Stock',
+    label: 'Edit Stock',
   },
 ];
 
@@ -22,9 +23,29 @@ type QueryParams = {
 };
 
 export default async function CreateStockPage(props: {
+  params: Promise<{ id: string }>;
   searchParams?: Promise<QueryParams>;
 }) {
   const searchParams = await props.searchParams;
+  const params = await props.params;
+  const id = params.id;
+
+  let stock: PStock | undefined;
+
+  try {
+    const unpopulatedStock = await db.stocks.getById(Number(id));
+    stock = {
+      id: unpopulatedStock.id,
+      quantity: unpopulatedStock.quantity,
+      arrivalDate: unpopulatedStock.arrivalDate,
+      expiryDate: unpopulatedStock.expiryDate,
+      product: await db.products.getById(unpopulatedStock.productId),
+      supplier: await db.suppliers.getById(unpopulatedStock.supplierId),
+    };
+  } catch {
+    notFound();
+  }
+
   return (
     <>
       <DashboardHeader breadcrumbs={breadcrumbs} />
@@ -32,10 +53,11 @@ export default async function CreateStockPage(props: {
       <main className="grid gap-6 p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Add a new stock</CardTitle>
+            <CardTitle>Editing stock {stock.id}</CardTitle>
           </CardHeader>
           <CardContent>
-            <AddStockForm
+            <EditStockForm
+              stock={stock}
               suppliersAction={suppliersAction}
               suppliersInitialInput={searchParams?.supplier}
               productsAction={productsAction}
