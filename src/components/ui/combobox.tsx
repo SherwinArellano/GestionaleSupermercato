@@ -25,24 +25,40 @@ import {
   FieldPath,
   FieldValues,
 } from 'react-hook-form';
-import { FormControl, FormField, FormItem, FormLabel } from './form';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from './form';
 import { Skeleton } from './skeleton';
+import { useDebouncedCallback } from 'use-debounce';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 export type ComboboxItem = {
   value: string;
   label: string;
 };
 
+export type ComboboxAction = (
+  state: ComboboxItem[],
+  formData: FormData
+) => Promise<ComboboxItem[]>;
+
 export type ComboboxProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   label: string;
+  noneFoundLabel: string;
+  initialContentLabel: string;
+  initialInput?: string;
   field?: ControllerRenderProps<TFieldValues, TName>;
   placeholder: string;
-  items: ComboboxItem[];
-  isPending?: boolean;
+  action: ComboboxAction;
   onInput?: (value: string) => void;
+  onPopoverState?: (open: boolean) => void;
 };
 
 export function FormCombobox<
@@ -68,6 +84,7 @@ export function FormCombobox<
           <FormControl>
             <Combobox field={field} label={label} {...props} />
           </FormControl>
+          <FormMessage />
         </FormItem>
       )}
     />
@@ -78,51 +95,57 @@ export function Combobox<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
-  label,
+  noneFoundLabel,
+  initialContentLabel,
   field,
+  initialInput,
+  action,
   placeholder,
-  items,
-  isPending,
   onInput,
+  onPopoverState,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Root> &
   ComboboxProps<TFieldValues, TName>) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState('');
+  const [valueLabel, setValueLabel] = React.useState('');
+  const [input, setInput] = React.useState(initialInput ?? '');
+  const [items, formAction, isPending] = React.useActionState(action, []);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const formRef = React.useRef<HTMLFormElement>(null);
+  const firstRef = React.useRef(true);
   const commonValue = field ? field.value : value;
 
-  const handleSelect = (currentValue: string) => {
-    const updateValue = currentValue === commonValue ? '' : currentValue;
-    if (field) field.onChange(updateValue);
-    else setValue(updateValue);
+  React.useEffect(() => {
+    onPopoverState?.(open);
+  }, [open, onPopoverState]);
+
+  const handleSelect = (selectedValue: string, label: string) => {
+    const updatedValue = selectedValue === commonValue ? '' : selectedValue;
+    if (field) field.onChange(updatedValue);
+    else setValue(updatedValue);
+    setValueLabel(label);
     setOpen(false);
   };
 
-  let commandGroupContent: React.ReactNode;
+  const submit = useDebouncedCallback((term: string) => {
+    const params = new URLSearchParams(searchParams);
 
-  if (isPending) {
-    commandGroupContent = <CommandGroupContentSkeleton />;
-  } else {
-    commandGroupContent = items.map((item) => (
-      <CommandItem
-        key={item.value}
-        value={item.value}
-        onSelect={handleSelect}
-        className="cursor-pointer"
-      >
-        {item.label}
-        <Check
-          className={cn(
-            'ml-auto',
-            commonValue === item.value ? 'opacity-100' : 'opacity-0'
-          )}
-        />
-      </CommandItem>
-    ));
-  }
+    if (term) {
+      params.set('supplier', term);
+    } else {
+      params.delete('supplier');
+    }
+
+    history.pushState(null, '', `${pathname}?${params.toString()}`);
+    formRef.current?.requestSubmit();
+  }, 300);
 
   return (
     <Popover open={open} onOpenChange={setOpen} {...props}>
+      {field && <input type="hidden" name={field.name} value={field.value} />}
+
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -130,28 +153,86 @@ export function Combobox<
           role="combobox"
           aria-expanded={open}
           className="h-auto w-full cursor-pointer justify-between"
+          onClick={() => {
+            if (!firstRef.current) return;
+            submit(input);
+            firstRef.current = false;
+          }}
         >
-          {commonValue
-            ? items.find((item) => item.value === commonValue)?.label
-            : placeholder}
+          {commonValue && valueLabel ? valueLabel : placeholder}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="popover-content w-full p-0">
-        <Command>
-          <CommandInput
-            placeholder={placeholder}
-            className="h-9"
-            onInput={(e) => onInput?.(e.currentTarget.value)}
-          />
-          <CommandList>
-            <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
-            <CommandGroup>{commandGroupContent}</CommandGroup>
-          </CommandList>
-        </Command>
+        <form action={formAction} ref={formRef}>
+          <Command shouldFilter={false} loop>
+            <CommandInput
+              name="input"
+              value={input}
+              placeholder={placeholder}
+              className="h-9"
+              onInput={(e) => {
+                onInput?.(e.currentTarget.value);
+                setInput(e.currentTarget.value);
+                submit(e.currentTarget.value);
+              }}
+            />
+            <CommandList>
+              <CommandEmpty>
+                {input ? noneFoundLabel : initialContentLabel}
+              </CommandEmpty>
+              <CommandGroup>
+                {isPending ? (
+                  <CommandGroupContentSkeleton />
+                ) : (
+                  <CommandGroupContent
+                    items={items}
+                    value={commonValue}
+                    onSelect={handleSelect}
+                  />
+                )}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </form>
       </PopoverContent>
     </Popover>
   );
+}
+
+function CommandGroupContent({
+  items,
+  value,
+  onSelect,
+}: {
+  value: string;
+  items: ComboboxItem[];
+  onSelect: (value: string, label: string) => void;
+}) {
+  return items.map((item) => (
+    <CommandItem
+      key={item.value}
+      value={item.value}
+      onSelect={(selectedValue) => {
+        const valueLabel =
+          items.find((item) => item.value === selectedValue)?.label ?? '';
+        onSelect(selectedValue, valueLabel);
+      }}
+      className="cursor-pointer"
+    >
+      {item.label}
+      <Check
+        className={cn(
+          'ml-auto',
+          // The reason why it's value.toString() is because I saw it
+          // too late that form.control.field doesn't return the correct
+          // type because value here could either be a string
+          // or a number.
+          value.toString() === item.value ? 'opacity-100' : 'opacity-0'
+        )}
+      />
+    </CommandItem>
+  ));
 }
 
 function CommandGroupContentSkeleton() {

@@ -127,6 +127,7 @@ function DatePickerFormItem<
         >
           <input
             type="date"
+            name={field.name}
             data-slot="input"
             className="border-input placeholder:text-muted-foreground flex h-9 w-full min-w-0 py-1 text-base outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             value={format(field.value, 'yyyy-MM-dd')}

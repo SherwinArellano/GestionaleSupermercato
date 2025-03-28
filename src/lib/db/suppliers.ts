@@ -250,6 +250,25 @@ export const getById = async (id: number): Promise<Supplier> => {
   return supplier;
 };
 
+export const getManyByName = async (
+  name: string,
+  options?: { limit?: number }
+): Promise<Supplier[]> => {
+  const suppliers = suppliersDb.data;
+  const sorted = suppliers.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const filtered = sorted.filter((supplier) =>
+    supplier.name.toLowerCase().includes(name.toLowerCase())
+  );
+
+  if (options?.limit) {
+    const limit =
+      options.limit > suppliers.length ? suppliers.length : options.limit;
+    filtered.splice(limit);
+  }
+
+  return filtered;
+};
+
 export const create = async (data: CreateSupplierDTO): Promise<string> => {
   const { data: suppliers, autoId } = suppliersDb;
   suppliers.push({

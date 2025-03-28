@@ -1,7 +1,10 @@
+'use server';
+
 import { Breadcrumb } from '@/components/ui/breadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
 import { AddStockForm } from '@/components/ui/dashboard/stocks/add-form';
+import { productsAction, suppliersAction } from './actions';
 
 const breadcrumbs: Breadcrumb[] = [
   {
@@ -13,7 +16,15 @@ const breadcrumbs: Breadcrumb[] = [
   },
 ];
 
-export default function CreateStockPage() {
+type QueryParams = {
+  supplier?: string;
+  product?: string;
+};
+
+export default async function CreateStockPage(props: {
+  searchParams?: Promise<QueryParams>;
+}) {
+  const searchParams = await props.searchParams;
   return (
     <>
       <DashboardHeader breadcrumbs={breadcrumbs} />
@@ -24,7 +35,12 @@ export default function CreateStockPage() {
             <CardTitle>Add a new stock</CardTitle>
           </CardHeader>
           <CardContent>
-            <AddStockForm />
+            <AddStockForm
+              suppliersAction={suppliersAction}
+              suppliersInitialInput={searchParams?.supplier}
+              productsAction={productsAction}
+              productsInitialInput={searchParams?.product}
+            />
           </CardContent>
         </Card>
       </main>

@@ -39,6 +39,40 @@ export const getById = async (id: number): Promise<Product> => {
   return response.data;
 };
 
+export const getManyByName = async (
+  name: string,
+  options?: { limit?: number }
+): Promise<Product[]> => {
+  let products: Product[];
+
+  try {
+    const data = await get();
+    products = data.content;
+
+    // Since query functionalities are still limited in the backend
+    // then manually get all products:
+    const promises: ReturnType<typeof get>[] = [];
+    for (let i = 1; i < data.totalPages; i++) promises.push(get({ page: i }));
+    (await Promise.all(promises)).forEach(({ content }) =>
+      products.push(...content)
+    );
+  } catch {
+    products = [];
+  }
+
+  const filtered = products.filter((product) =>
+    product.name.toLowerCase().includes(name.toLowerCase())
+  );
+
+  if (options?.limit) {
+    const limit =
+      options.limit > products.length ? products.length : options.limit;
+    filtered.splice(limit);
+  }
+
+  return filtered;
+};
+
 export const create = async (data: CreateProductDTO): Promise<string> => {
   const response = await instance.post<
     string,

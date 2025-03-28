@@ -11,7 +11,7 @@ import { ScreenSpinner } from '../../spinner';
 import { FormState } from '@/types/form';
 import { useForm } from '@/hooks/use-form';
 import { DatePicker, IntegerInput } from '../../form-input';
-import { ComboboxItem, FormCombobox } from '../../combobox';
+import { ComboboxAction, FormCombobox } from '../../combobox';
 
 const resolver = zodResolver(StockSchema);
 
@@ -28,30 +28,17 @@ const initialFormState: FormState<StockValues> = {
   },
 };
 
-const sampleItems: ComboboxItem[] = [
-  {
-    value: 'next.js',
-    label: 'Next.js',
-  },
-  {
-    value: 'sveltekit',
-    label: 'SvelteKit',
-  },
-  {
-    value: 'nuxt.js',
-    label: 'Nuxt.js',
-  },
-  {
-    value: 'remix',
-    label: 'Remix',
-  },
-  {
-    value: 'astro',
-    label: 'Astro',
-  },
-];
-
-export function AddStockForm() {
+export function AddStockForm({
+  suppliersAction,
+  suppliersInitialInput,
+  productsAction,
+  productsInitialInput,
+}: {
+  suppliersInitialInput?: string;
+  suppliersAction: ComboboxAction;
+  productsInitialInput?: string;
+  productsAction: ComboboxAction;
+}) {
   const { form, formAction, isPending } = useForm({
     resolver,
     action: addStock,
@@ -95,17 +82,23 @@ export function AddStockForm() {
         <FormCombobox
           control={form.control}
           name="productId"
-          items={sampleItems}
           label="Product"
+          noneFoundLabel="No products found."
+          initialContentLabel="Start typing for a product."
           placeholder="Select product..."
+          action={productsAction}
+          initialInput={productsInitialInput}
         />
 
         <FormCombobox
           control={form.control}
           name="supplierId"
-          items={sampleItems}
           label="Supplier"
+          noneFoundLabel="No suppliers found."
+          initialContentLabel="Start typing for a supplier."
           placeholder="Select supplier..."
+          action={suppliersAction}
+          initialInput={suppliersInitialInput}
         />
 
         <Button
