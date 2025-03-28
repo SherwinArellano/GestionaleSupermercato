@@ -39,6 +39,10 @@ const getEmptyValues: GetEmptyValues<SupplierValues> = () => {
   };
 };
 
+export async function samplePopulate(): Promise<string> {
+  return db.suppliers.samplePopulate();
+}
+
 export async function addSupplier(
   prevState: FormState<SupplierValues>,
   formData: FormData

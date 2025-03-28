@@ -10,6 +10,8 @@ import { auth } from '@/auth';
 import { checkPermission } from '@/authorization';
 import { SuppliersTableSkeleton } from '@/components/ui/dashboard/suppliers/table-skeleton';
 import { SuppliersTable } from '@/components/ui/dashboard/suppliers/table';
+import { PopulateSuppliersButton } from '@/components/ui/dashboard/suppliers/populate-button';
+import { env } from '@/data/env/server';
 
 export const metadata: Metadata = {
   title: 'Suppliers',
@@ -66,6 +68,8 @@ export default async function SuppliersPage(props: {
           </div>
 
           <Suspended searchParams={searchParams} />
+
+          {env.NODE_ENV === 'development' && <PopulateSuppliersButton />}
         </div>
       </main>
     </>
