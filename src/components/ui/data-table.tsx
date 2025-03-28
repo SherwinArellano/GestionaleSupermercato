@@ -141,6 +141,7 @@ export function DataTable<TData, TValue>({
   label,
   columns,
   data,
+  searchName,
   search,
   currentPage,
   totalPages,
@@ -151,6 +152,7 @@ export function DataTable<TData, TValue>({
   label: string;
   columns: Tanstack.ColumnDef<TData, TValue>[];
   data: TData[];
+  searchName?: string;
   isError?: boolean;
   // WARNING: Data filtering, sorting, and processing must be done by the backend.
   // For now, this will be handled in the client with the following
@@ -182,8 +184,8 @@ export function DataTable<TData, TValue>({
 
   useEffect(() => {
     if (!search) return;
-    table.getColumn('name')?.setFilterValue(search);
-  }, [table, search]);
+    table.getColumn(searchName ?? 'name')?.setFilterValue(search);
+  }, [table, search, searchName]);
 
   useEffect(() => {
     if (!sort || !order) return;
@@ -299,29 +301,6 @@ export function SearchInput(props: React.ComponentProps<'input'>) {
       {...props}
       onChange={(e) => handleSearch(e.target.value)}
       defaultValue={searchParams.get('search')?.toString()}
-    />
-  );
-}
-
-/**
- * @deprecated In favor of SearchInput, this component is marked to be removed
- *             once the new table logic with query parameters is implemented.
- */
-export function InputFilter<TData extends Tanstack.RowData>({
-  table,
-  className,
-  ...props
-}: React.ComponentProps<'input'> & {
-  table: Tanstack.Table<TData>;
-}) {
-  return (
-    <Input
-      value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-      onChange={(event) =>
-        table.getColumn('name')?.setFilterValue(event.target.value)
-      }
-      className={className}
-      {...props}
     />
   );
 }

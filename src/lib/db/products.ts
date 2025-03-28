@@ -34,15 +34,11 @@ export const get = async ({
   return response.data;
 };
 
-export const getById = async (id: number): Promise<Product> => {
-  const response = await instance.get<Product>(`/${route}/id/?id=${id}`);
-  return response.data;
-};
-
-export const getManyByName = async (
-  name: string,
-  options?: { limit?: number }
-): Promise<Product[]> => {
+/**
+ * @deprecated This is just a helper function to get all products.
+ * @description It is marked deprecated to let it be known that this is a temporary solution.
+ */
+export const getAll = async (): Promise<Product[]> => {
   let products: Product[];
 
   try {
@@ -60,6 +56,19 @@ export const getManyByName = async (
     products = [];
   }
 
+  return products;
+};
+
+export const getById = async (id: number): Promise<Product> => {
+  const response = await instance.get<Product>(`/${route}/id/?id=${id}`);
+  return response.data;
+};
+
+export const getManyByName = async (
+  name: string,
+  options?: { limit?: number }
+): Promise<Product[]> => {
+  const products = await getAll();
   const filtered = products.filter((product) =>
     product.name.toLowerCase().includes(name.toLowerCase())
   );

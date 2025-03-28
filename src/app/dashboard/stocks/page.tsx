@@ -1,0 +1,108 @@
+import { Button } from '@/components/ui/button';
+import { DashboardHeader } from '@/components/ui/dashboard/header';
+import { StocksTable } from '@/components/ui/dashboard/stocks/table';
+import { StocksTableSkeleton } from '@/components/ui/dashboard/stocks/table-skeleton';
+import { SearchInput } from '@/components/ui/data-table';
+import { Plus, RefreshCcw } from 'lucide-react';
+import { Metadata } from 'next';
+import Link from 'next/link';
+import { Suspense } from 'react';
+import { revalidateTag, unstable_cacheTag as cacheTag } from 'next/cache';
+import { auth } from '@/auth';
+import { checkPermission } from '@/authorization';
+
+export const metadata: Metadata = {
+  title: 'Stocks',
+};
+
+type QueryParams = {
+  search?: string;
+  page?: string;
+  order?: 'asc' | 'desc';
+  sort?: string;
+};
+
+export default async function StocksPage(props: {
+  searchParams?: Promise<QueryParams>;
+}) {
+  const session = await auth();
+  const user = session?.user;
+  const searchParams = await props.searchParams;
+
+  return (
+    <>
+      <DashboardHeader breadcrumbs={[{ label: 'Stocks' }]} />
+
+      <main className="grid gap-6 p-6">
+        <div className="w-full min-w-0">
+          <div className="mb-4 flex items-center gap-4">
+            <SearchInput className="flex-1" placeholder="Find stocks..." />
+
+            <Button
+              type="button"
+              variant="outline"
+              className="cursor-pointer"
+              onClick={async () => {
+                'use server';
+                revalidateTag('stocks');
+              }}
+            >
+              <RefreshCcw />
+            </Button>
+
+            {user && checkPermission(user.role, 'create-stock') && (
+              <Button
+                type="button"
+                variant="default"
+                className="cursor-pointer"
+                asChild
+              >
+                <Link href="/dashboard/stocks/add">
+                  <Plus />
+                  New Stock
+                </Link>
+              </Button>
+            )}
+          </div>
+
+          <Suspended searchParams={searchParams} />
+        </div>
+      </main>
+    </>
+  );
+}
+
+async function Suspended({
+  searchParams,
+}: {
+  searchParams: QueryParams | undefined;
+}) {
+  'use cache';
+
+  cacheTag('stocks');
+
+  // When cacheTag revalidates, the `now` changes
+  // makine Suspense to rerender.
+  // This is to trigger skeleton loading when
+  // the user presses on the refresh button.
+  const now = Date.now();
+
+  const search = searchParams?.search ?? '';
+  const order = searchParams?.order ?? 'asc';
+  const sort = searchParams?.sort ?? 'name';
+  const currentPage = Number(searchParams?.page) || 1;
+
+  return (
+    <Suspense
+      key={now + search + currentPage + order + sort}
+      fallback={<StocksTableSkeleton />}
+    >
+      <StocksTable
+        search={search}
+        currentPage={currentPage}
+        order={order}
+        sort={sort}
+      />
+    </Suspense>
+  );
+}
