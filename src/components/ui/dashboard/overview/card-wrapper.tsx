@@ -4,7 +4,6 @@ import { currencyFormatter } from '@/lib/utils';
 import { isAxiosError } from 'axios';
 import { Banknote, Factory, LucideIcon, Package, Users } from 'lucide-react';
 import { ShowToast } from './show-toast';
-import { users } from '@/lib/db/users';
 import { unstable_cacheTag as cacheTag } from 'next/cache';
 
 export async function CardWrapper() {
@@ -13,7 +12,7 @@ export async function CardWrapper() {
       <OverviewCard title="Total Sales" icon={Banknote} value={0} isCurrency />
       <ProductsOverviewCard />
       <SuppliersOverviewCard />
-      <OverviewCard title="Total Users" icon={Users} value={users.length} />
+      <UsersOverviewCard />
     </>
   );
 }
@@ -68,6 +67,16 @@ async function SuppliersOverviewCard() {
       value={suppliersCount}
     />
   );
+}
+
+async function UsersOverviewCard() {
+  'use cache';
+
+  cacheTag('users');
+
+  const users = await db.users.get();
+
+  return <OverviewCard title="Total Users" icon={Users} value={users.length} />;
 }
 
 function OverviewCard(props: {

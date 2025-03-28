@@ -1,7 +1,11 @@
+'use server';
+
 import { User } from '@/types/entities/user';
+import { dbConnect } from '../mongodbConnect';
+import { UserModel } from './mongodb-models/user';
 
 // For now I'm hardcoding accounts since backend authentication is currently in development.
-export const users: User[] = [
+const sampleUsers: User[] = [
   {
     email: 's.arellano@esis-italia.com',
     name: 'Sherwin',
@@ -46,8 +50,38 @@ export const users: User[] = [
   },
 ];
 
+/**
+ * Populate the mongodb database with sample users.
+ */
+export const register = async (): Promise<string> => {
+  await dbConnect();
+
+  try {
+    await Promise.all(
+      sampleUsers.map(async (user) => {
+        await UserModel.create(user);
+        console.log(`${user.name} has been inserted to db.`);
+      })
+    );
+    return 'Successfully populated!';
+  } catch (error) {
+    console.error(error);
+    return 'An error has occurred';
+  }
+};
+
+export const get = async (): Promise<User[]> => {
+  await dbConnect();
+
+  const users = await UserModel.find();
+
+  return users;
+};
+
 export const getByEmail = async (email: string): Promise<User | null> => {
-  const user = users.find((user) => user.email === email);
+  await dbConnect();
+
+  const user = await UserModel.findOne().where('email', email).lean();
 
   return user ?? null;
 };
