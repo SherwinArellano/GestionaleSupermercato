@@ -15,7 +15,7 @@ export const get = async (): Promise<GetAll<MongoStock>> => {
   await dbConnect();
 
   const stocks = (await StockModel.find({}, { _id: 0 })
-    .populate('supplier')
+    .populate('supplier', { _id: 0 })
     .lean()) as unknown as MongoStock[];
 
   return {
@@ -34,7 +34,7 @@ export const getById = async (id: number): Promise<MongoStock> => {
   await dbConnect();
 
   const stock = (await StockModel.findOne({ id }, { _id: 0 })
-    .populate('supplier')
+    .populate('supplier', { _id: 0 })
     .lean()) as unknown as MongoStock;
 
   // The reason why I'm throwing is because I'm simulating the
