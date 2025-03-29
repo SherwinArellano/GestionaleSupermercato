@@ -1,5 +1,6 @@
 'use server';
 
+import { auth } from '@/auth';
 import { isAuthorized } from '@/lib/authorization';
 import db from '@/lib/db';
 import { UserSchema, UserValues } from '@/lib/entities/user';
@@ -155,6 +156,15 @@ export async function deleteUser(
     return {
       success: false,
       message: `You don't have permission to do that.`,
+    };
+  }
+
+  // Check if self
+  const { user } = (await auth())!;
+  if (user.operatorCode === operatorCode) {
+    return {
+      success: false,
+      message: 'You cannot delete yourself!',
     };
   }
 
