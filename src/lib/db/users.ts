@@ -1,8 +1,9 @@
 'use server';
 
-import { User } from '@/types/entities/user';
+import { CreateUserDTO, UpdateUserDTO, User } from '@/types/entities/user';
 import { dbConnect } from '../mongodbConnect';
 import { UserModel } from './mongodb-models/user';
+import { generateOperatorCode } from '../utils';
 
 // For now I'm hardcoding accounts since backend authentication is currently in development.
 const sampleUsers: User[] = [
@@ -53,7 +54,7 @@ const sampleUsers: User[] = [
 /**
  * Populate the mongodb database with sample users.
  */
-export const register = async (): Promise<string> => {
+export const samplePopulate = async (): Promise<string> => {
   await dbConnect();
 
   try {
@@ -84,4 +85,52 @@ export const getByEmail = async (email: string): Promise<User | null> => {
   const user = await UserModel.findOne().where('email', email).lean();
 
   return user ?? null;
+};
+
+export const create = async (data: CreateUserDTO): Promise<string> => {
+  await dbConnect();
+
+  // Since I don't know what's the plan for users yet, here's what I think:
+  // A user without a password is a user that hasn't registered yet.
+  await UserModel.create({
+    operatorCode: generateOperatorCode(),
+    password: '',
+    ...data,
+  } satisfies User);
+
+  return 'New user has been added.';
+};
+
+export const updateByOperatorCode = async (
+  operatorCode: string,
+  data: UpdateUserDTO
+): Promise<string> => {
+  try {
+    await dbConnect();
+
+    const user = await UserModel.findOne({ operatorCode });
+    if (!user) {
+      return `User with operator code '${operatorCode}' does not exist!`;
+    }
+
+    user.set(data);
+    await user.save();
+    return `User with operator code '${operatorCode}' has been updated.`;
+  } catch {
+    return `User with operator code '${operatorCode}' could not be updated!`;
+  }
+};
+
+export const deleteByOperatorCode = async (
+  operatorCode: string
+): Promise<string> => {
+  await dbConnect();
+
+  const response = await UserModel.deleteOne({ operatorCode });
+
+  if (response.deletedCount === 0) {
+    return `User with operator code '${operatorCode}' could not be deleted! It may not exists.`;
+  }
+
+  return `User with operator code '${operatorCode}' has been deleted.`;
 };

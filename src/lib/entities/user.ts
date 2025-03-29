@@ -25,3 +25,5 @@ export const UserSchema = z.object({
   email: z.string().email('Invalid email.').min(1, 'Email is required.'),
   role: z.enum(RoleValues, { required_error: 'Role is required.' }),
 } satisfies Record<keyof CreateUserDTO, any>);
+
+export type UserValues = z.infer<typeof UserSchema>;
