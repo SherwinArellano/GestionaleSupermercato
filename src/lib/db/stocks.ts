@@ -1,20 +1,23 @@
-import { CreateStockDTO, GetAll, Stock, UpdateStockDTO } from '@/types/db';
+import {
+  CreateStockDTO,
+  GetAll,
+  Stock,
+  Supplier,
+  UpdateStockDTO,
+} from '@/types/db';
 import { AxiosError } from 'axios';
+import { dbConnect } from '../mongodbConnect';
+import { StockModel } from './mongodb-models/stock';
 
-// For now I'm hardcoding stocks since backend doesn't currently support them.
-// This trick persists data in memory storage when going through different imports
-declare global {
-  // eslint-disable-next-line no-var
-  var stocksDb: { data: Stock[]; autoId: number };
-}
+export type MongoStock = Stock & { supplier: Supplier };
 
-globalThis.stocksDb = globalThis.stocksDb ?? {
-  autoId: 1,
-  data: [],
-};
+export const get = async (): Promise<GetAll<MongoStock>> => {
+  await dbConnect();
 
-export const get = async (): Promise<GetAll<Stock>> => {
-  const stocks = stocksDb.data;
+  const stocks = (await StockModel.find({}, { _id: 0 })
+    .populate('supplier')
+    .lean()) as unknown as MongoStock[];
+
   return {
     data: stocks,
     // For now, I'm returning everything since the client occupies of
@@ -27,20 +30,28 @@ export const get = async (): Promise<GetAll<Stock>> => {
   };
 };
 
-export const getById = async (id: number): Promise<Stock> => {
-  const stocks = stocksDb.data;
-  const stock = stocks.find((stock) => stock.id === id);
+export const getById = async (id: number): Promise<MongoStock> => {
+  await dbConnect();
+
+  const stock = (await StockModel.findOne({ id }, { _id: 0 })
+    .populate('supplier')
+    .lean()) as unknown as MongoStock;
+
+  // The reason why I'm throwing is because I'm simulating the
+  // real backend's response.
   if (!stock) throw new AxiosError('Stock not found.');
   return stock;
 };
 
 export const create = async (data: CreateStockDTO): Promise<string> => {
-  const { data: stocks, autoId } = stocksDb;
-  stocks.push({
-    id: autoId,
+  await dbConnect();
+
+  const highestId =
+    (await StockModel.findOne().sort({ age: -1 }).limit(1))?.id ?? 1;
+  await StockModel.create({
+    id: highestId,
     ...data,
-  });
-  stocksDb.autoId++;
+  } satisfies Stock);
   return 'New stock has been added.';
 };
 
@@ -48,17 +59,28 @@ export const updateById = async (
   id: number,
   data: UpdateStockDTO
 ): Promise<string> => {
-  const stocks = stocksDb.data;
-  const stock = stocks.find((stock) => stock.id === id);
-  if (!stock) throw new AxiosError('Stock not found.');
-  Object.assign(stock, data);
+  await dbConnect();
+
+  const response = await StockModel.updateOne({ id }, {
+    id,
+    ...data,
+  } satisfies Stock);
+
+  if (response.modifiedCount === 0) {
+    return `Stock with ${id} could not be updated! It may not exists.`;
+  }
+
   return `Stock with id ${id} has been updated.`;
 };
 
 export const deleteById = async (id: number): Promise<string> => {
-  const stocks = stocksDb.data;
-  const index = stocks.findIndex((stock) => stock.id === id);
-  if (index < 0) throw new AxiosError('Stock not found.');
-  stocks.splice(index, 1);
+  await dbConnect();
+
+  const response = await StockModel.deleteOne({ id });
+
+  if (response.deletedCount === 0) {
+    return `Stock with ${id} could not be deleted! It may not exists.`;
+  }
+
   return `Stock with id ${id} has been deleted.`;
 };

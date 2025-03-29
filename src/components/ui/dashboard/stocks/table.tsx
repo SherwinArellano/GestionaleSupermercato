@@ -29,18 +29,15 @@ export async function StocksTable({
     const response = await db.stocks.get();
 
     // Populate stocks
-    const [products, { data: suppliers }] = await Promise.all([
-      db.products.getAll(),
-      db.suppliers.get(),
-    ]);
+    const products = await db.products.getAll();
     stocks = response.data.map(
-      ({ arrivalDate, expiryDate, id, quantity, productId, supplierId }) => ({
+      ({ arrivalDate, expiryDate, id, quantity, productId, supplier }) => ({
         id,
         arrivalDate,
         expiryDate,
         quantity,
+        supplier,
         product: products.find((p) => p.id === productId)!,
-        supplier: suppliers.find((s) => s.id === supplierId)!,
       })
     );
 
