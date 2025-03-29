@@ -80,6 +80,19 @@ export const get = async (): Promise<User[]> => {
   return users;
 };
 
+export const getByOperatorCode = async (
+  operatorCode: string
+): Promise<User | null> => {
+  await dbConnect();
+
+  const user = await UserModel.findOne(
+    { operatorCode },
+    { _id: 0, password: 0 }
+  ).lean();
+
+  return user ?? null;
+};
+
 export const getByEmail = async (
   email: string,
   options?: { withPassword: boolean }

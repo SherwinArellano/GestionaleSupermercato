@@ -134,6 +134,16 @@ export async function updateUser(
     };
   }
 
+  // Check if email already exists
+  const user = await db.users.getByEmail(values.email);
+  if (user) {
+    return {
+      values,
+      success: false,
+      message: `That email is already taken!`,
+    };
+  }
+
   // Update user
   try {
     const message = await db.users.updateByOperatorCode(
