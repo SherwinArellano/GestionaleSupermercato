@@ -32,6 +32,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ControllerRenderProps, FieldPath, FieldValues } from 'react-hook-form';
 import * as db from '@/types/db';
+import { redirect } from 'next/navigation';
 
 const resolver = zodResolver(UserSchema);
 
@@ -53,6 +54,7 @@ export function EditUserForm(props: { user: db.User }) {
         icon: <User />,
         description: message,
       });
+      redirect('/dashboard/users');
     },
     onError: ({ message }) => {
       toast.error(message);
