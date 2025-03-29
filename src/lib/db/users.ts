@@ -74,7 +74,7 @@ export const samplePopulate = async (): Promise<string> => {
 export const get = async (): Promise<User[]> => {
   await dbConnect();
 
-  const users = await UserModel.find();
+  const users = await UserModel.find({}, { _id: 0, password: 0 }).lean();
 
   return users;
 };
@@ -82,7 +82,10 @@ export const get = async (): Promise<User[]> => {
 export const getByEmail = async (email: string): Promise<User | null> => {
   await dbConnect();
 
-  const user = await UserModel.findOne().where('email', email).lean();
+  const user = await UserModel.findOne()
+    .where('email', email)
+    .projection({ _id: 0, password: 0 })
+    .lean();
 
   return user ?? null;
 };
