@@ -22,9 +22,6 @@ export async function StocksTable({
   let isError = false;
 
   try {
-    // Simulate db request
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
     // For now, this is getting all stocks.
     const response = await db.stocks.get();
 

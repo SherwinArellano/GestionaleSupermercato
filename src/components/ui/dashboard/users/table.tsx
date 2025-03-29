@@ -22,9 +22,6 @@ export async function UsersTable({
   let isError = false;
 
   try {
-    // Simulate db request
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
     // For now, this is getting all users.
     users = await db.users.get();
     totalPages = Math.ceil(users.length / 20);

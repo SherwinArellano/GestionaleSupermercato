@@ -22,9 +22,6 @@ export async function SuppliersTable({
   let isError = false;
 
   try {
-    // Simulate db request
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
     // For now, this is getting all suppliers.
     const response = await db.suppliers.get();
     suppliers = response.data;

@@ -52,8 +52,6 @@ async function SuppliersOverviewCard() {
 
   cacheTag('suppliers');
 
-  // Simulate db request
-  await new Promise((resolve) => setTimeout(resolve, 200));
   const { totalElements: suppliersCount } = await db.suppliers.get();
 
   return (
