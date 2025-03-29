@@ -15,7 +15,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         if (!parsedCredentials.success) return null;
 
         const { email, password } = parsedCredentials.data;
-        const user = await db.users.getByEmail(email);
+        const user = await db.users.getByEmail(email, { withPassword: true });
 
         if (!user) return null;
 

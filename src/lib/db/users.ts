@@ -4,6 +4,7 @@ import { CreateUserDTO, UpdateUserDTO, User } from '@/types/entities/user';
 import { dbConnect } from '../mongodbConnect';
 import { UserModel } from './mongodb-models/user';
 import { generateOperatorCode } from '../utils';
+import { ProjectionType } from 'mongoose';
 
 // For now I'm hardcoding accounts since backend authentication is currently in development.
 const sampleUsers: User[] = [
@@ -79,13 +80,16 @@ export const get = async (): Promise<User[]> => {
   return users;
 };
 
-export const getByEmail = async (email: string): Promise<User | null> => {
+export const getByEmail = async (
+  email: string,
+  options?: { withPassword: boolean }
+): Promise<User | null> => {
   await dbConnect();
 
-  const user = await UserModel.findOne()
-    .where('email', email)
-    .projection({ _id: 0, password: 0 })
-    .lean();
+  const projection: ProjectionType<User> = { _id: 0 };
+  if (!options?.withPassword) projection['password'] = 0;
+
+  const user = await UserModel.findOne({ email }, projection).lean();
 
   return user ?? null;
 };
