@@ -111,6 +111,8 @@ export async function updateUser(
 ): Promise<FormState<UserValues>> {
   // Extract and normalize form values
   const rawData = extractRawValues(formData);
+  const user = (await db.users.getByOperatorCode(operatorCode))!;
+  rawData.email = user.email;
   const values = extractValues(rawData);
 
   // Validate values
@@ -131,16 +133,6 @@ export async function updateUser(
       values,
       success: false,
       message: `You don't have permission to do that.`,
-    };
-  }
-
-  // Check if email already exists
-  const user = await db.users.getByEmail(values.email);
-  if (user) {
-    return {
-      values,
-      success: false,
-      message: `That email is already taken!`,
     };
   }
 

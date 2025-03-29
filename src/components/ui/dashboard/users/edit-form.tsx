@@ -62,7 +62,7 @@ export function EditUserForm(props: { user: db.User }) {
   return (
     <Form {...form}>
       <form action={formAction} className="space-y-8">
-        {isPending && <ScreenSpinner label="Adding user" />}
+        {isPending && <ScreenSpinner label="Updating user" />}
 
         <FormField
           control={form.control}
@@ -137,7 +137,7 @@ export function EditUserForm(props: { user: db.User }) {
           type="submit"
           className="ml-auto block w-full cursor-pointer px-10 md:w-auto"
         >
-          Add User
+          Update User
         </Button>
       </form>
     </Form>
