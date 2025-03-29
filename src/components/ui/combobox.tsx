@@ -51,6 +51,7 @@ export type ComboboxProps<
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   label: string;
+  query: string;
   noneFoundLabel: string;
   initialContentLabel: string;
   initialInput?: string;
@@ -92,7 +93,7 @@ export function FormCombobox<
   );
 }
 
-export function Combobox<
+function Combobox<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
@@ -105,6 +106,7 @@ export function Combobox<
   placeholder,
   onInput,
   onPopoverState,
+  query,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Root> &
   ComboboxProps<TFieldValues, TName>) {
@@ -135,9 +137,9 @@ export function Combobox<
     const params = new URLSearchParams(searchParams);
 
     if (term) {
-      params.set('supplier', term);
+      params.set(query, term);
     } else {
-      params.delete('supplier');
+      params.delete(query);
     }
 
     history.pushState(null, '', `${pathname}?${params.toString()}`);
