@@ -87,6 +87,7 @@ export function EditStockForm({
           control={form.control}
           name="productId"
           label="Product"
+          query="product"
           noneFoundLabel="No products found."
           initialContentLabel="Start typing for a product."
           placeholder="Select product..."
@@ -99,6 +100,7 @@ export function EditStockForm({
           control={form.control}
           name="supplierId"
           label="Supplier"
+          query="supplier"
           noneFoundLabel="No suppliers found."
           initialContentLabel="Start typing for a supplier."
           placeholder="Select supplier..."
