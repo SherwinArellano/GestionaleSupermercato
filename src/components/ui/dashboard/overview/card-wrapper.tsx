@@ -18,16 +18,12 @@ export async function CardWrapper() {
 }
 
 async function ProductsOverviewCard() {
-  'use cache';
-
-  cacheTag('products');
-
   let productsCount: number;
   let isError = false;
 
   try {
-    const { totalElements } = await db.products.get();
-    productsCount = totalElements;
+    const products = await db.products.getAll();
+    productsCount = products.length;
   } catch (e) {
     if (isAxiosError(e) && e.code === 'ECONNREFUSED') {
       isError = true;

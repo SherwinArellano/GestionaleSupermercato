@@ -1,6 +1,7 @@
 import { Product, CreateProductDTO, UpdateProductDTO } from '@/types/db';
 import instance from './instance';
 import { AxiosResponse } from 'axios';
+import { unstable_cacheTag as cacheTag } from 'next/cache';
 
 const route = `products`;
 
@@ -39,6 +40,10 @@ export const get = async ({
  * @description It is marked deprecated to let it be known that this is a temporary solution.
  */
 export const getAll = async (): Promise<Product[]> => {
+  'use cache';
+
+  cacheTag('products');
+
   let products: Product[];
 
   try {

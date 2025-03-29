@@ -9,7 +9,7 @@ import { Plus, RefreshCcw } from 'lucide-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { revalidateTag, unstable_cacheTag as cacheTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 import { auth } from '@/auth';
 import { checkPermission } from '@/authorization';
 
@@ -83,14 +83,6 @@ async function Suspended({
 }: {
   searchParams: QueryParams | undefined;
 }) {
-  'use cache';
-
-  cacheTag('products');
-
-  // When cacheTag revalidates, the `now` changes
-  // makine Suspense to rerender.
-  // This is to trigger skeleton loading when
-  // the user presses on the refresh button.
   const now = Date.now();
 
   const search = searchParams?.search ?? '';
