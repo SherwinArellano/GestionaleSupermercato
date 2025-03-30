@@ -89,7 +89,7 @@ async function Suspended({
 
   const search = searchParams?.search ?? '';
   const order = searchParams?.order ?? 'asc';
-  const sort = searchParams?.sort ?? 'name';
+  const sort = searchParams?.sort ?? 'product';
   const currentPage = Number(searchParams?.page) || 1;
 
   return (
