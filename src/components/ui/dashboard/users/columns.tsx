@@ -28,13 +28,14 @@ import {
   SortTableHeadSkeleton,
 } from '@/components/ui/data-table';
 import { CreateUserDTO, User } from '@/types/db';
-import { deleteUser } from './actions';
+import { deleteUser, resetUserPassword } from './actions';
 import Link from 'next/link';
 import { Skeleton } from '../../skeleton';
 import { useSession } from 'next-auth/react';
 import { checkPermission } from '@/authorization';
 import { useActionForm } from '@/hooks/use-form';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 export type UserSkeleton = Record<keyof CreateUserDTO, number>;
 
@@ -157,18 +158,9 @@ export { columns, skeletonColumns };
 
 function UserDropdownMenu({ user }: { user: User }) {
   const { data: session } = useSession();
-  const { formAction } = useActionForm({
-    action: deleteUser.bind(null, user.operatorCode),
-    onSuccess: ({ message }) => {
-      toast('User deleted', {
-        icon: <lucide.User />,
-        description: message,
-      });
-    },
-    onError: ({ message }) => {
-      toast.error(message);
-    },
-  });
+  const [alertState, setAlertState] = useState<'reset-password' | 'delete'>(
+    'delete'
+  );
 
   const copyId = () => {
     navigator.clipboard.writeText(user.operatorCode.toString());
@@ -199,44 +191,131 @@ function UserDropdownMenu({ user }: { user: User }) {
             Copy operator code
           </DropdownMenuItem>
 
-          {(canEdit || canDelete) && <DropdownMenuSeparator />}
-
           {canEdit && (
-            <DropdownMenuItem asChild>
-              <Link href={`/dashboard/users/${user.operatorCode}/edit`}>
-                Edit
-              </Link>
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem asChild>
+                <Link href={`/dashboard/users/${user.operatorCode}/edit`}>
+                  Edit
+                </Link>
+              </DropdownMenuItem>
+
+              <AlertDialogTrigger
+                onClick={() => setAlertState('reset-password')}
+                asChild
+              >
+                <DropdownMenuItem variant="destructive">
+                  Reset password
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+            </>
           )}
 
           {canDelete && (
-            <AlertDialogTrigger asChild>
-              <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-            </AlertDialogTrigger>
+            <>
+              <DropdownMenuSeparator />
+
+              <AlertDialogTrigger
+                onClick={() => setAlertState('delete')}
+                asChild
+              >
+                <DropdownMenuItem variant="destructive">
+                  Delete
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+            </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
       <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure to delete this user?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the user{' '}
-            {user.name}. Do you wish to continue?
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel className="cursor-pointer">No</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            className="cursor-pointer"
-            asChild
-          >
-            <form action={formAction}>
-              <button className="cursor-pointer">Yes, Delete</button>
-            </form>
-          </AlertDialogAction>
-        </AlertDialogFooter>
+        {alertState === 'delete' ? (
+          <DeleteAlertContent user={user} />
+        ) : (
+          <ResetPasswordAlertContent user={user} />
+        )}
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+function ResetPasswordAlertContent({ user }: { user: User }) {
+  const { formAction } = useActionForm({
+    action: resetUserPassword.bind(null, user.operatorCode),
+    onSuccess: ({ message }) => {
+      toast('User deleted', {
+        icon: <lucide.User />,
+        description: message,
+      });
+    },
+    onError: ({ message }) => {
+      toast.error(message);
+    },
+  });
+
+  return (
+    <>
+      <AlertDialogHeader>
+        <AlertDialogTitle>
+          Are you sure to reset the password of this user?
+        </AlertDialogTitle>
+        <AlertDialogDescription>
+          This action cannot be undone. This will reset the password of the user{' '}
+          {user.name} meaning they will have to sign up again. Do you wish to
+          continue?
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel className="cursor-pointer">No</AlertDialogCancel>
+        <AlertDialogAction
+          variant="destructive"
+          className="cursor-pointer"
+          asChild
+        >
+          <form action={formAction}>
+            <button className="cursor-pointer">Yes, Reset Password</button>
+          </form>
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </>
+  );
+}
+
+function DeleteAlertContent({ user }: { user: User }) {
+  const { formAction } = useActionForm({
+    action: deleteUser.bind(null, user.operatorCode),
+    onSuccess: ({ message }) => {
+      toast('User deleted', {
+        icon: <lucide.User />,
+        description: message,
+      });
+    },
+    onError: ({ message }) => {
+      toast.error(message);
+    },
+  });
+
+  return (
+    <>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Are you sure to delete this user?</AlertDialogTitle>
+        <AlertDialogDescription>
+          This action cannot be undone. This will permanently delete the user{' '}
+          {user.name}. Do you wish to continue?
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel className="cursor-pointer">No</AlertDialogCancel>
+        <AlertDialogAction
+          variant="destructive"
+          className="cursor-pointer"
+          asChild
+        >
+          <form action={formAction}>
+            <button className="cursor-pointer">Yes, Delete</button>
+          </form>
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </>
   );
 }

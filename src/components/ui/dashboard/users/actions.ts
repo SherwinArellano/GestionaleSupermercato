@@ -159,6 +159,44 @@ export async function updateUser(
   }
 }
 
+export async function resetUserPassword(
+  operatorCode: string
+): Promise<Omit<FormState<UserValues>, 'values' | 'errors'>> {
+  // Check if authorized
+  const authorized = await isAuthorized('edit-user');
+  if (!authorized) {
+    return {
+      success: false,
+      message: `You don't have permission to do that.`,
+    };
+  }
+
+  // Check if self
+  const { user } = (await auth())!;
+  if (user.operatorCode === operatorCode) {
+    return {
+      success: false,
+      message:
+        'You cannot reset your own password! Go to your account settings instead.',
+    };
+  }
+
+  // Reset user password
+  try {
+    const message = await db.users.resetPasswordByOperatorCode(operatorCode);
+
+    return {
+      message,
+      success: true,
+    };
+  } catch {
+    return {
+      message: 'Internal server error. Failed to reset user password.',
+      success: false,
+    };
+  }
+}
+
 export async function deleteUser(
   operatorCode: string
 ): Promise<Omit<FormState<UserValues>, 'values' | 'errors'>> {

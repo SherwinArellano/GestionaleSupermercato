@@ -149,6 +149,22 @@ export const updateByOperatorCode = async (
   }
 };
 
+export const resetPasswordByOperatorCode = async (
+  operatorCode: string
+): Promise<string> => {
+  await dbConnect();
+
+  const user = await UserModel.findOne({ operatorCode });
+  if (!user) {
+    return `User with operator code '${operatorCode}' does not exist!`;
+  }
+
+  user.password = '';
+  await user.save();
+
+  return `User with operator code '${operatorCode}'s password has been reset.`;
+};
+
 export const deleteByOperatorCode = async (
   operatorCode: string
 ): Promise<string> => {
