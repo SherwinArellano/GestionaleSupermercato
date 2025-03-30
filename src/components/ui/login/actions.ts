@@ -42,13 +42,33 @@ export async function authenticate(
     };
   }
 
-  // Login
   try {
-    // Since signIn doesn't return the user, we get the user
-    // manually to get the role and correctly redirect to their page
-    const user = await db.users.getByEmail(values.email);
+    const user = await db.users.getByEmail(values.email, {
+      withOID: true,
+      withPassword: true,
+    });
+
+    // Check if user exists
+    if (!user) {
+      return {
+        success: false,
+        message: 'Invalid credentials.', // This is a trick against hackers to make it seem like the user exists but doesn't.
+        values,
+      };
+    }
+
+    // Check if new user
+    if (user.password === '') {
+      return {
+        success: false,
+        message: 'New user detected. Please go to the sign up page.',
+        values,
+      };
+    }
+
+    // Login user
     await signIn('credentials', {
-      redirectTo: getRoleRedirectUrl(user!.role),
+      redirectTo: getRoleRedirectUrl(user.role),
       ...values,
     });
     return {

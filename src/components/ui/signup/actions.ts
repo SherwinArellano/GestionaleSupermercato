@@ -59,7 +59,6 @@ export async function signup(
     const user = await db.users.getByOperatorCode(values.operatorCode, {
       withOID: true,
       withPassword: true,
-      lean: true,
     });
 
     // Check if user already signed up

@@ -80,10 +80,10 @@ export const get = async (): Promise<User[]> => {
   return users;
 };
 
-export const getByOperatorCode = async <TLean extends boolean>(
+export const getByOperatorCode = async <TLean extends boolean = false>(
   operatorCode: string,
   options?: { withPassword?: boolean; withOID?: boolean; lean?: TLean }
-): Promise<(TLean extends true ? HydratedDocument<User> : User) | null> => {
+): Promise<(TLean extends true ? User : HydratedDocument<User>) | null> => {
   await dbConnect();
 
   const projection: ProjectionType<User & { _id: ObjectId }> = {};
@@ -93,24 +93,31 @@ export const getByOperatorCode = async <TLean extends boolean>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let user: any;
   if (options?.lean) {
-    user = await UserModel.findOne({ operatorCode }, projection);
-  } else {
     user = await UserModel.findOne({ operatorCode }, projection).lean();
+  } else {
+    user = await UserModel.findOne({ operatorCode }, projection);
   }
 
   return user ?? null;
 };
 
-export const getByEmail = async (
+export const getByEmail = async <TLean extends boolean>(
   email: string,
-  options?: { withPassword: boolean }
-): Promise<User | null> => {
+  options?: { withPassword?: boolean; withOID?: boolean; lean?: TLean }
+): Promise<(TLean extends true ? User : HydratedDocument<User>) | null> => {
   await dbConnect();
 
-  const projection: ProjectionType<User> = { _id: 0 };
+  const projection: ProjectionType<User & { _id: ObjectId }> = {};
+  if (!options?.withOID) projection['_id'] = 0;
   if (!options?.withPassword) projection['password'] = 0;
 
-  const user = await UserModel.findOne({ email }, projection).lean();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let user: any;
+  if (options?.lean) {
+    user = await UserModel.findOne({ email }, projection).lean();
+  } else {
+    user = await UserModel.findOne({ email }, projection);
+  }
 
   return user ?? null;
 };
