@@ -6,7 +6,7 @@ export const env = createEnv({
     NODE_ENV: z.enum(['development', 'production']),
     DB_BASE_URL: z.string().min(1),
     AUTH_SECRET: z.string().min(1),
-    MONGODB_URL: z.string().min(1),
+    MONGODB_URI: z.string().min(1),
   },
   experimental__runtimeEnv: process.env,
 });
