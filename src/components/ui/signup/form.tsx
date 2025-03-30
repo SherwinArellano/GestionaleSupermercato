@@ -12,34 +12,53 @@ import {
 import { Input } from '@/components/ui/input';
 import { DarkModeToggle } from '../dark-mode-toggle';
 import Link from 'next/link';
-import { signup } from './actions';
-import { Form, FormField, FormItem, FormLabel, FormMessage } from '../form';
+import { signup, SignUpFormState } from './actions';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '../form';
 import { toast } from 'sonner';
 import { useForm } from '@/hooks/use-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { SignUpSchema, SignUpValues } from '@/lib/entities/user';
-import { FormState } from '@/types/form';
+import { SignUpSchema } from '@/lib/entities/user';
+import { redirect } from 'next/navigation';
 
 const resolver = zodResolver(SignUpSchema);
 
-const initialState: FormState<SignUpValues> = {
+const initialState: SignUpFormState = {
   message: '',
   success: false,
-  values: { operatorCode: '' },
+  isSetPassword: false,
+  values: { operatorCode: '', email: '', confirmPassword: '', password: '' },
 };
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'div'>) {
-  const { form, formAction } = useForm({
+  const {
+    state: rawState,
+    form,
+    formAction,
+  } = useForm({
     resolver,
     initialState,
-    action: signup,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    action: signup as any,
     onSuccess: ({ message }) => {
+      toast.success(message);
+      redirect('/login');
+    },
+    onError: ({ message }) => {
       toast.warning(message);
     },
   });
+
+  const state = rawState as SignUpFormState;
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -60,7 +79,7 @@ export function SignUpForm({
                 control={form.control}
                 name="operatorCode"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="mb-4">
                     <FormLabel>Operator Code</FormLabel>
                     <Input
                       type="text"
@@ -72,7 +91,39 @@ export function SignUpForm({
                 )}
               />
 
-              <Button type="submit" className="mt-6 w-full cursor-pointer">
+              {state.isSetPassword && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem className="mb-4">
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem className="mb-4">
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              <Button type="submit" className="mt-2 w-full cursor-pointer">
                 Sign Up
               </Button>
 

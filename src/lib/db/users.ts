@@ -4,7 +4,7 @@ import { CreateUserDTO, UpdateUserDTO, User } from '@/types/entities/user';
 import { dbConnect } from '../mongodbConnect';
 import { UserModel } from './mongodb-models/user';
 import { generateOperatorCode } from '../utils';
-import { ProjectionType } from 'mongoose';
+import { HydratedDocument, ObjectId, ProjectionType } from 'mongoose';
 
 // For now I'm hardcoding accounts since backend authentication is currently in development.
 const sampleUsers: User[] = [
@@ -80,15 +80,23 @@ export const get = async (): Promise<User[]> => {
   return users;
 };
 
-export const getByOperatorCode = async (
-  operatorCode: string
-): Promise<User | null> => {
+export const getByOperatorCode = async <TLean extends boolean>(
+  operatorCode: string,
+  options?: { withPassword?: boolean; withOID?: boolean; lean?: TLean }
+): Promise<(TLean extends true ? HydratedDocument<User> : User) | null> => {
   await dbConnect();
 
-  const user = await UserModel.findOne(
-    { operatorCode },
-    { _id: 0, password: 0 }
-  ).lean();
+  const projection: ProjectionType<User & { _id: ObjectId }> = {};
+  if (!options?.withOID) projection['_id'] = 0;
+  if (!options?.withPassword) projection['password'] = 0;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let user: any;
+  if (options?.lean) {
+    user = await UserModel.findOne({ operatorCode }, projection);
+  } else {
+    user = await UserModel.findOne({ operatorCode }, projection).lean();
+  }
 
   return user ?? null;
 };

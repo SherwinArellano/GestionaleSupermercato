@@ -13,9 +13,28 @@ export const LoginSchema = z.object({
 
 export type LoginValues = z.infer<typeof LoginSchema>;
 
-export const SignUpSchema = z.object({
-  operatorCode: z.string().min(1, 'Operator code is required.'),
-} satisfies Record<keyof Pick<User, 'operatorCode'>, any>);
+export const SignUpSchema = z
+  .object({
+    email: z.string(), // placeholder, not really needed
+    operatorCode: z.string().min(1, 'Operator code is required.'),
+    password: z
+      .string()
+      .min(6, 'Password must be at least 6 characters long.')
+      .min(1, 'Password is required.'),
+    confirmPassword: z.string(),
+  } satisfies Record<
+    keyof Pick<User, 'operatorCode' | 'email' | 'password'> | 'confirmPassword',
+    any
+  >)
+  .superRefine(({ confirmPassword, password }, ctx) => {
+    if (confirmPassword !== password) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Passwords do not match.',
+        path: ['confirmPassword'],
+      });
+    }
+  });
 
 export type SignUpValues = z.infer<typeof SignUpSchema>;
 

@@ -37,6 +37,7 @@ export function useForm<Values extends FormValues>(props: {
   });
 
   return {
+    state,
     form,
     formAction,
     isPending,
