@@ -26,7 +26,7 @@ export default async function EditUserPage(props: {
   const params = await props.params;
   const opcode = params.opcode;
 
-  const user = await db.users.getByOperatorCode(opcode);
+  const user = await db.users.getByOperatorCode(opcode, { lean: true });
   if (!user) notFound();
 
   return (
