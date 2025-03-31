@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { PStock } from '@/types/db';
+import { Product, PStock } from '@/types/db';
 import { isAxiosError } from 'axios';
 import { DataTable } from '../../data-table';
 import { columns } from './columns';
@@ -27,6 +27,17 @@ export async function StocksTable({
 
     // Populate stocks
     const products = await db.products.getAll();
+    const deletedProduct: Product = {
+      id: -1,
+      name: 'Deleted product',
+      sellingPrice: 0,
+      stocks: [],
+      category: {
+        id: -1,
+        name: 'Unknown',
+      },
+    };
+
     stocks = response.data.map(
       ({ arrivalDate, expiryDate, id, quantity, productId, supplier }) => ({
         id,
@@ -34,7 +45,7 @@ export async function StocksTable({
         expiryDate,
         quantity,
         supplier,
-        product: products.find((p) => p.id === productId)!,
+        product: products.find((p) => p.id === productId) ?? deletedProduct,
       })
     );
 
