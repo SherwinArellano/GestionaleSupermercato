@@ -1,14 +1,16 @@
 import instance from './instance';
 import * as products from './products';
-import * as users from './users';
-import * as suppliers from './suppliers';
+import * as sales from './sales';
 import * as stocks from './stocks';
+import * as suppliers from './suppliers';
+import * as users from './users';
 
 const db = {
   instance,
   products,
-  suppliers,
+  sales,
   stocks,
+  suppliers,
   users,
 };
 

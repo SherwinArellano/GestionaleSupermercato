@@ -1,7 +1,8 @@
 export * from './entities/category';
 export * from './entities/product';
-export * from './entities/supplier';
+export * from './entities/sale';
 export * from './entities/stock';
+export * from './entities/supplier';
 export * from './entities/user';
 
 export type GetAll<Entity> = {
