@@ -287,7 +287,7 @@ export const create = async (data: CreateSupplierDTO): Promise<string> => {
   const highestId =
     (await SupplierModel.findOne().sort({ age: -1 }).limit(1))?.id ?? 1;
   await SupplierModel.create({
-    id: highestId,
+    id: highestId + 1,
     ...data,
   } satisfies Supplier);
   return 'New supplier has been added.';
