@@ -20,7 +20,7 @@ const breadcrumbs: Breadcrumb[] = [
   },
 ];
 
-export default async function CreateUserPage(props: {
+export default async function EditUserPage(props: {
   params: Promise<{ opcode: string }>;
 }) {
   const params = await props.params;
