@@ -43,20 +43,31 @@ export const getById = async (id: number): Promise<MongoStock> => {
   return stock;
 };
 
-export const groupByProductQuantity = async (): Promise<
-  {
-    _id: number;
-    totalQuantity: number;
-  }[]
+export type LatestStockInfo = {
+  id: number;
+  totalQuantity: number;
+  latestArrivalDate: Date;
+  latestExpiryDate: Date;
+};
+
+export const groupByLatestInfo = async (): Promise<
+  Map<number, LatestStockInfo>
 > => {
   await dbConnect();
 
-  const quantities = await StockModel.aggregate().group({
+  const elements = await StockModel.aggregate<
+    Omit<LatestStockInfo, 'id'> & { _id: number }
+  >().group({
     _id: '$productId',
     totalQuantity: { $sum: '$quantity' },
+    latestArrivalDate: { $max: '$arrivalDate' },
+    latestExpiryDate: { $min: '$expiryDate' },
   });
 
-  return quantities;
+  const map = new Map<number, LatestStockInfo>();
+  elements.forEach(({ _id, ...data }) => map.set(_id, { id: _id, ...data }));
+
+  return map;
 };
 
 export const create = async (data: CreateStockDTO): Promise<string> => {

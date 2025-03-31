@@ -24,12 +24,10 @@ export async function ProductsTable({
     const products = await db.products.getAll();
 
     // Populate quantities
-    const quantities = await db.stocks.groupByProductQuantity();
-    const map = new Map<number, number>();
-    quantities.forEach(({ _id, totalQuantity }) => map.set(_id, totalQuantity));
+    const map = await db.stocks.groupByLatestInfo();
 
     tableProducts = products.map((product) => ({
-      quantity: map.get(product.id) ?? 0,
+      quantity: map.get(product.id)?.totalQuantity ?? 0,
       ...product,
     }));
 

@@ -14,7 +14,7 @@ import { Skeleton } from '../../skeleton';
 const LOW_STOCK_THRESHOLD = 20;
 const MEDIUM_STOCK_THRESHOLD = 40;
 
-export type Product = {
+export type OverviewProduct = {
   name: string;
   arrivalDate: Date;
   expiryDate: Date;
@@ -22,11 +22,11 @@ export type Product = {
 };
 
 export type ProductSkeleton = {
-  [P in keyof Product]: number;
+  [P in keyof OverviewProduct]: number;
 };
 
 const [columns, skeletonColumns] = new ColumnsBuilder<
-  Product,
+  OverviewProduct,
   ProductSkeleton
 >()
   .addColumn(
