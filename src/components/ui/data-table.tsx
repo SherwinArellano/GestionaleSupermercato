@@ -143,6 +143,7 @@ export function DataTable<TData, TValue>({
   data,
   searchName,
   search,
+  paginationKey,
   currentPage,
   totalPages,
   order,
@@ -158,6 +159,7 @@ export function DataTable<TData, TValue>({
   // For now, this will be handled in the client with the following
   // helper props:
   search?: string;
+  paginationKey?: string;
   currentPage?: number;
   totalPages?: number;
   order?: 'asc' | 'desc';
@@ -224,6 +226,7 @@ export function DataTable<TData, TValue>({
       </div>
 
       <DataTableFooter
+        paginationKey={paginationKey}
         currentPage={currentPage ?? 1}
         totalPages={totalPages ?? 1}
       />
@@ -359,13 +362,19 @@ export function DataTableFooterSkeleton() {
 export function DataTableFooter({
   currentPage,
   totalPages,
+  paginationKey,
 }: {
+  paginationKey?: string;
   currentPage: number;
   totalPages: number;
 }) {
   return (
     <div className="space-x-2 py-4">
-      <Pagination currentPage={currentPage} totalPages={totalPages} />
+      <Pagination
+        paginationKey={paginationKey}
+        currentPage={currentPage}
+        totalPages={totalPages}
+      />
     </div>
   );
 }
@@ -419,21 +428,24 @@ export function PaginationSkeleton() {
 export function Pagination({
   currentPage,
   totalPages,
+  paginationKey,
 }: {
   currentPage: number;
   totalPages: number;
+  paginationKey?: string;
 }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
 
+  const key = paginationKey ?? 'page';
   const nextPage = () => {
     const params = new URLSearchParams(searchParams);
 
-    const next = (Number(params.get('page')) || 1) + 1;
+    const next = (Number(params.get(key)) || 1) + 1;
 
     if (next <= totalPages) {
-      params.set('page', next.toString());
+      params.set(key, next.toString());
       replace(`${pathname}?${params.toString()}`);
     }
   };
@@ -441,23 +453,23 @@ export function Pagination({
   const prevPage = () => {
     const params = new URLSearchParams(searchParams);
 
-    const prev = (Number(params.get('page')) || 1) - 1;
+    const prev = (Number(params.get(key)) || 1) - 1;
 
     if (prev >= 1) {
-      params.set('page', prev.toString());
+      params.set(key, prev.toString());
       replace(`${pathname}?${params.toString()}`);
     }
   };
 
   const firstPage = () => {
     const params = new URLSearchParams(searchParams);
-    params.set('page', '1');
+    params.set(key, '1');
     replace(`${pathname}?${params.toString()}`);
   };
 
   const lastPage = () => {
     const params = new URLSearchParams(searchParams);
-    params.set('page', totalPages.toString());
+    params.set(key, totalPages.toString());
     replace(`${pathname}?${params.toString()}`);
   };
 

@@ -1,9 +1,12 @@
 import { columns, OverviewProduct } from './products-column';
 import { DataTable } from '../../data-table';
 import db from '@/lib/db';
+import { isAxiosError } from 'axios';
 
-export async function ProductsTable() {
+export async function ProductsTable({ currentPage }: { currentPage: number }) {
   let overviewProducts: OverviewProduct[];
+  let totalPages = 1;
+  let isError = false;
 
   try {
     const products = await db.products.getAll();
@@ -21,11 +24,25 @@ export async function ProductsTable() {
         };
       })
       .sort((a, b) => a.quantity - b.quantity);
-  } catch {
+
+    totalPages = Math.ceil(products.length / 20);
+  } catch (e) {
+    if (isAxiosError(e) && e.code === 'ECONNREFUSED') {
+      isError = true;
+    }
+
     overviewProducts = [];
   }
 
   return (
-    <DataTable label="products" columns={columns} data={overviewProducts} />
+    <DataTable
+      label="products"
+      columns={columns}
+      data={overviewProducts}
+      paginationKey="productPage"
+      currentPage={currentPage}
+      totalPages={totalPages}
+      isError={isError}
+    />
   );
 }

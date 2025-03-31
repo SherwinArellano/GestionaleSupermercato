@@ -13,7 +13,14 @@ export const metadata: Metadata = {
   title: 'Overview',
 };
 
-export default function OverviewPage() {
+type QueryParams = {
+  productPage?: string;
+};
+
+export default async function OverviewPage(props: {
+  searchParams?: Promise<QueryParams>;
+}) {
+  const searchParams = await props.searchParams;
   return (
     <>
       <DashboardHeader breadcrumbs={[{ label: 'Overview' }]} />
@@ -42,7 +49,9 @@ export default function OverviewPage() {
             </CardHeader>
             <CardContent>
               <Suspense fallback={<ProductsTableSkeleton />}>
-                <ProductsTable />
+                <ProductsTable
+                  currentPage={Number(searchParams?.productPage) || 1}
+                />
               </Suspense>
             </CardContent>
           </Card>
