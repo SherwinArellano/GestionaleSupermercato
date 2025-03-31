@@ -9,17 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import {
-  BarChart3,
-  Boxes,
-  Factory,
-  Home,
-  Megaphone,
-  Package,
-  Percent,
-  Receipt,
-  Users,
-} from 'lucide-react';
+import { Boxes, Factory, Home, Package, Receipt, Users } from 'lucide-react';
 import { SidebarUser, SidebarUserProps } from './sidebar-user';
 import Link from 'next/link';
 import { checkUrlPermission } from '@/authorization';
@@ -51,26 +41,28 @@ export const items = [
     url: '/sales',
     icon: Receipt,
   },
-  {
-    title: 'Discounts',
-    url: '/discounts',
-    icon: Percent,
-  },
-  {
-    title: 'Promotions',
-    url: '/promotions',
-    icon: Megaphone,
-  },
+  // For now hide Discounts and Promotions
+  // {
+  //   title: 'Discounts',
+  //   url: '/discounts',
+  //   icon: Percent,
+  // },
+  // {
+  //   title: 'Promotions',
+  //   url: '/promotions',
+  //   icon: Megaphone,
+  // },
   {
     title: 'Users',
     url: '/users',
     icon: Users,
   },
-  {
-    title: 'Analytics',
-    url: '/analytics',
-    icon: BarChart3,
-  },
+  // For now hide analytics page
+  // {
+  //   title: 'Analytics',
+  //   url: '/analytics',
+  //   icon: BarChart3,
+  // },
 ];
 
 export async function AppSidebar({
