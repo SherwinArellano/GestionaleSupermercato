@@ -5,6 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
 import { AddStockForm } from '@/components/ui/dashboard/stocks/add-form';
 import { productsAction, suppliersAction } from '../actions';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Add Stock',
+};
 
 const breadcrumbs: Breadcrumb[] = [
   {

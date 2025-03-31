@@ -1,5 +1,10 @@
 import { Breadcrumb } from '@/components/ui/breadcrumbs';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '404',
+};
 
 const breadcrumbs: Breadcrumb[] = [
   {

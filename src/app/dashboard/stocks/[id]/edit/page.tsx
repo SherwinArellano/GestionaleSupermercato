@@ -6,6 +6,11 @@ import db from '@/lib/db';
 import { PStock } from '@/types/db';
 import { notFound } from 'next/navigation';
 import { productsAction, suppliersAction } from '../../actions';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Edit Stock',
+};
 
 const breadcrumbs: Breadcrumb[] = [
   {

@@ -5,6 +5,11 @@ import { EditSupplierForm } from '@/components/ui/dashboard/suppliers/edit-form'
 import db from '@/lib/db';
 import { Supplier } from '@/types/db';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Edit Supplier',
+};
 
 const breadcrumbs: Breadcrumb[] = [
   {

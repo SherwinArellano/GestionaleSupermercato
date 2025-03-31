@@ -2,6 +2,11 @@ import { Breadcrumb } from '@/components/ui/breadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
 import { AddSupplierForm } from '@/components/ui/dashboard/suppliers/add-form';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Add Supplier',
+};
 
 const breadcrumbs: Breadcrumb[] = [
   {

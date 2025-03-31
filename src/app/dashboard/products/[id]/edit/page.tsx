@@ -5,6 +5,11 @@ import { EditProductForm } from '@/components/ui/dashboard/products/edit-form';
 import db from '@/lib/db';
 import { Product } from '@/types/db';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Edit Product',
+};
 
 const breadcrumbs: Breadcrumb[] = [
   {

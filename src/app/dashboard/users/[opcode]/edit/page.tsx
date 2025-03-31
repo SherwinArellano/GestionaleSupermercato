@@ -4,6 +4,11 @@ import { DashboardHeader } from '@/components/ui/dashboard/header';
 import { EditUserForm } from '@/components/ui/dashboard/users/edit-form';
 import db from '@/lib/db';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Edit User',
+};
 
 const breadcrumbs: Breadcrumb[] = [
   {

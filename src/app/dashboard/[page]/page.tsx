@@ -1,6 +1,11 @@
 import { items } from '@/components/ui/dashboard/app-sidebar';
 import { PageInProgress } from '@/components/ui/dashboard/page-in-progress';
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+
+export const metadata: Metadata = {
+  title: '501',
+};
 
 export default async function Page(props: {
   params: Promise<{ page: string }>;
