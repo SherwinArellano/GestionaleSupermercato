@@ -37,14 +37,17 @@ import { checkPermission } from '@/authorization';
 import { useActionForm } from '@/hooks/use-form';
 import { toast } from 'sonner';
 
+export type TableProduct = Product & { quantity: number };
+
 export type ProductSkeleton = {
   name: number;
   category: number;
   sellingPrice: number;
+  quantity: number;
 };
 
 const [columns, skeletonColumns] = new ColumnsBuilder<
-  Product,
+  TableProduct,
   ProductSkeleton
 >()
   .addColumn(
@@ -94,6 +97,30 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
       ),
       cell: ({ row }) => (
         <Skeleton className={`h-6`} style={{ width: row.original.category }} />
+      ),
+    }
+  )
+  .addColumn(
+    {
+      accessorKey: 'quantity',
+      header: (context) => (
+        <SortTableHead
+          title="Quantity"
+          value="quantity"
+          className="-ml-3"
+          desc={getHeadSortState(context)}
+          number
+        />
+      ),
+      cell: ({ row }) => <div>{row.original.quantity}</div>,
+    },
+    {
+      accessorKey: 'quantity',
+      header: () => (
+        <SortTableHeadSkeleton title="Quantity" className="-ml-3" number />
+      ),
+      cell: ({ row }) => (
+        <Skeleton className={`h-6`} style={{ width: row.original.quantity }} />
       ),
     }
   )

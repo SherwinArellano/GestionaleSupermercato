@@ -43,6 +43,22 @@ export const getById = async (id: number): Promise<MongoStock> => {
   return stock;
 };
 
+export const groupByProductQuantity = async (): Promise<
+  {
+    _id: number;
+    totalQuantity: number;
+  }[]
+> => {
+  await dbConnect();
+
+  const quantities = await StockModel.aggregate().group({
+    _id: '$productId',
+    totalQuantity: { $sum: '$quantity' },
+  });
+
+  return quantities;
+};
+
 export const create = async (data: CreateStockDTO): Promise<string> => {
   await dbConnect();
 

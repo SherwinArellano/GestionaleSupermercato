@@ -1,6 +1,5 @@
 import db from '@/lib/db';
-import { columns } from './products-column';
-import { Product } from '@/types/db';
+import { columns, TableProduct } from './products-column';
 import { isAxiosError } from 'axios';
 import { DataTable } from '../../data-table';
 
@@ -17,19 +16,30 @@ export async function ProductsTable({
   order,
   sort,
 }: ProductsTableProps) {
-  let products: Product[];
+  let tableProducts: TableProduct[];
   let totalPages = 1;
   let isError = false;
 
   try {
-    products = await db.products.getAll();
+    const products = await db.products.getAll();
+
+    // Populate quantities
+    const quantities = await db.stocks.groupByProductQuantity();
+    const map = new Map<number, number>();
+    quantities.forEach(({ _id, totalQuantity }) => map.set(_id, totalQuantity));
+
+    tableProducts = products.map((product) => ({
+      quantity: map.get(product.id) ?? 0,
+      ...product,
+    }));
+
     totalPages = Math.ceil(products.length / 20);
   } catch (e) {
     if (isAxiosError(e) && e.code === 'ECONNREFUSED') {
       isError = true;
     }
 
-    products = [];
+    tableProducts = [];
   }
 
   return (
@@ -41,7 +51,7 @@ export async function ProductsTable({
       order={order}
       sort={sort}
       columns={columns}
-      data={products}
+      data={tableProducts}
       isError={isError}
     />
   );
