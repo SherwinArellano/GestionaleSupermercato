@@ -63,7 +63,7 @@ export const create = async (data: CreateStockDTO): Promise<string> => {
   await dbConnect();
 
   const highestId =
-    (await StockModel.findOne().sort({ age: -1 }).limit(1))?.id ?? 1;
+    (await StockModel.findOne().sort({ id: -1 }).limit(1))?.id ?? 1;
   await StockModel.create({
     id: highestId + 1,
     ...data,
