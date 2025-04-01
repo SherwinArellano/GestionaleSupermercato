@@ -9,7 +9,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { addSale } from './actions';
+import { addSale, autocompleteProducts } from './actions';
 import { SaleSchema, SaleValues } from '@/lib/entities/sale';
 import { toast } from 'sonner';
 import { ScreenSpinner } from '../../spinner';
@@ -36,7 +36,6 @@ import {
 } from '../../command';
 import { Command as CommandPrimitive } from 'cmdk';
 import { CommandGroupContentSkeleton } from '../../combobox';
-import { useDebouncedCallback } from 'use-debounce';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Product, SaleProduct } from '@/types/db';
 import {
@@ -75,13 +74,7 @@ export type ProductAction = (
 
 type ProductsInputRef = { reset: () => void };
 
-export function AddSaleForm({
-  productsAction,
-  productsInitialInput,
-}: {
-  productsAction: ProductAction;
-  productsInitialInput?: string;
-}) {
+export function AddSaleForm() {
   const productsInputRef = useRef<ProductsInputRef>(null);
   const { form, formAction, isPending } = useForm({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,13 +104,7 @@ export function AddSaleForm({
         <FormField
           name="products"
           control={form.control}
-          render={() => (
-            <ProductsInput
-              action={productsAction}
-              initialInput={productsInitialInput}
-              ref={productsInputRef}
-            />
-          )}
+          render={() => <ProductsInput ref={productsInputRef} />}
         />
 
         <Button
@@ -133,23 +120,24 @@ export function AddSaleForm({
 
 type SaleProductTableItem = Product & { quantityString: string };
 
-function ProductsInput({
-  action,
-  initialInput,
-  ref,
-}: {
-  action: ProductAction;
-  initialInput?: string;
-  ref?: Ref<ProductsInputRef>;
-}) {
+function ProductsInput({ ref }: { ref?: Ref<ProductsInputRef> }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const [search, setSearch] = useState(initialInput ?? '');
-  const [items, formAction, isPending] = React.useActionState(action, []);
+  const [search, setSearch] = useState('');
+  const [items, formAction, isPending] = React.useActionState(
+    autocompleteProducts,
+    []
+  );
   const startTransition = useTransition()[1];
   const [selectedProducts, setSelectedProducts] = useState<
     SaleProductTableItem[]
   >([]);
+
+  useEffect(() => {
+    startTransition(() => {
+      formAction();
+    });
+  }, [formAction, startTransition]);
 
   const saleProductsJSON = useMemo<string>(
     () =>
@@ -184,21 +172,8 @@ function ProductsInput({
   };
 
   const handleInputChange = (value: string) => {
-    submitProductQuery(value);
     setSearch(value);
   };
-
-  const submitProductQuery = useDebouncedCallback((term: string) => {
-    const params = new URLSearchParams(searchParams);
-
-    if (term) {
-      params.set('product', term);
-    } else {
-      params.delete('product');
-    }
-
-    history.pushState(null, '', `${pathname}?${params.toString()}`);
-  }, 300);
 
   const handleProductRemove = (id: number) => {
     setSelectedProducts((products) => products.filter((p) => p.id !== id));
@@ -218,14 +193,6 @@ function ProductsInput({
     });
   };
 
-  useEffect(() => {
-    startTransition(() => {
-      const formData = new FormData();
-      formData.append('input', search);
-      formAction(formData);
-    });
-  }, [formAction, search, startTransition]);
-
   useImperativeHandle(ref, () => {
     return {
       reset() {
@@ -234,8 +201,16 @@ function ProductsInput({
     };
   });
 
-  const filteredItems = items.filter(
-    ({ product }) => !selectedProducts.find(({ id }) => id === product.id)
+  const filteredItems = useMemo(
+    () =>
+      items.filter(({ product }) => {
+        if (selectedProducts.find(({ id }) => id === product.id)) {
+          return false;
+        }
+        if (search === '') return true;
+        return product.name.toLowerCase().includes(search.toLowerCase());
+      }),
+    [items, search, selectedProducts]
   );
 
   return (
@@ -259,7 +234,7 @@ function ProductsInput({
             className="popover-content mt-1 p-0"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <CommandList>
+            <CommandList className="max-h-full">
               <CommandEmpty>No products found.</CommandEmpty>
               <CommandGroup>
                 {isPending ? (

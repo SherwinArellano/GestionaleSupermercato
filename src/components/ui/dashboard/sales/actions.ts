@@ -11,6 +11,7 @@ import {
   GetEmptyValues,
 } from '@/types/form';
 import { revalidateTag } from 'next/cache';
+import { ProductActionItem } from './add-form';
 
 const extractRawValues: ExtractRawValues<SaleValues> = (formData) => {
   return {
@@ -167,3 +168,13 @@ export async function addSale(
 //     };
 //   }
 // }
+
+export const autocompleteProducts = async (): Promise<ProductActionItem[]> => {
+  const products = await db.products.getAll();
+
+  return products.map((product) => ({
+    value: product.id.toString(),
+    label: product.name,
+    product,
+  }));
+};
