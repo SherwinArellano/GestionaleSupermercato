@@ -11,7 +11,7 @@ import { FormState } from '@/types/form';
 import { useForm } from '@/hooks/use-form';
 import { DatePicker } from '../../form-input';
 import { Input } from '../../input';
-import { Package, Receipt } from 'lucide-react';
+import { Package, Receipt, X } from 'lucide-react';
 import React, { useEffect, useState, useTransition } from 'react';
 import { Popover, PopoverAnchor, PopoverContent } from '../../popover';
 import {
@@ -25,6 +25,14 @@ import { CommandGroupContentSkeleton } from '../../combobox';
 import { useDebouncedCallback } from 'use-debounce';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Product } from '@/types/db';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../table';
 
 const resolver = zodResolver(SaleSchema);
 
@@ -142,6 +150,10 @@ function ProductsInput({
     history.pushState(null, '', `${pathname}?${params.toString()}`);
   }, 300);
 
+  const handleProductRemove = (id: number) => {
+    setSelectedProducts((products) => products.filter((p) => p.id !== id));
+  };
+
   useEffect(() => {
     startTransition(() => {
       const formData = new FormData();
@@ -149,6 +161,10 @@ function ProductsInput({
       formAction(formData);
     });
   }, [formAction, search, startTransition]);
+
+  const filteredItems = items.filter(
+    ({ product }) => !selectedProducts.find(({ id }) => id === product.id)
+  );
 
   return (
     <FormItem>
@@ -175,7 +191,7 @@ function ProductsInput({
                 {isPending ? (
                   <CommandGroupContentSkeleton />
                 ) : (
-                  items.map(({ label, value, product }) => (
+                  filteredItems.map(({ label, value, product }) => (
                     <CommandItem
                       key={value}
                       value={value}
@@ -192,9 +208,46 @@ function ProductsInput({
         </CommandPrimitive>
       </Popover>
 
-      {selectedProducts.map((product) => (
-        <li key={product.id}>{product.name}</li>
-      ))}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="pl-3">Product</TableHead>
+              <TableHead className="pr-3 text-right">Amount</TableHead>
+              <TableHead className="w-[32px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {selectedProducts.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} className="h-72">
+                  <span className="flex justify-center gap-2.5">
+                    No selected products yet.
+                  </span>
+                </TableCell>
+              </TableRow>
+            )}
+            {selectedProducts.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell className="pl-3">{product.name}</TableCell>
+                <TableCell className="pr-3 text-right">
+                  €{(product.sellingPrice / 100).toFixed(2)}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="cursor-pointer"
+                    onClick={() => handleProductRemove(product.id)}
+                  >
+                    <X />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </FormItem>
   );
 }
