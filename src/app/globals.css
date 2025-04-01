@@ -158,4 +158,10 @@ html.light {
     width: var(--radix-popover-trigger-width);
     max-height: var(--radix-popover-content-available-height);
   }
+
+  /* Match dropdown and trigger content size (https://www.radix-ui.com/primitives/docs/components/dropdown-menu#constrain-the-contentsub-content-size) */
+  .dropdown-content {
+    width: var(--radix-dropdown-menu-trigger-width);
+    max-height: var(--radix-dropdown-menu-content-available-height);
+  }
 }

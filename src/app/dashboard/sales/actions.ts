@@ -1,19 +1,20 @@
 'use server';
 
-import { ComboboxItem } from '@/components/ui/combobox';
+import { ProductActionItem } from '@/components/ui/dashboard/sales/add-form';
 import db from '@/lib/db';
 
 export const productsAction = async (
-  state: ComboboxItem[],
+  state: ProductActionItem[],
   formData: FormData
-): Promise<ComboboxItem[]> => {
+): Promise<ProductActionItem[]> => {
   const input = formData.get('input')?.toString() ?? '';
   const products = await db.products.getManyByName(input, {
     limit: 10,
   });
 
-  return products.map(({ id, name }) => ({
-    value: id.toString(),
-    label: name,
+  return products.map((product) => ({
+    value: product.id.toString(),
+    label: product.name,
+    product,
   }));
 };

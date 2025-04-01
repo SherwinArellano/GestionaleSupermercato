@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardHeader } from '@/components/ui/dashboard/header';
 import { AddSaleForm } from '@/components/ui/dashboard/sales/add-form';
 import { Metadata } from 'next';
+import { productsAction } from '../actions';
 
 export const metadata: Metadata = {
   title: 'Add Sale',
@@ -18,7 +19,14 @@ const breadcrumbs: Breadcrumb[] = [
   },
 ];
 
-export default async function CreateSalePage() {
+type QueryParams = {
+  product?: string;
+};
+
+export default async function CreateSalePage(props: {
+  searchParams?: Promise<QueryParams>;
+}) {
+  const searchParams = await props.searchParams;
   return (
     <>
       <DashboardHeader breadcrumbs={breadcrumbs} />
@@ -29,7 +37,10 @@ export default async function CreateSalePage() {
             <CardTitle>Add a new sale</CardTitle>
           </CardHeader>
           <CardContent>
-            <AddSaleForm />
+            <AddSaleForm
+              productsAction={productsAction}
+              productsInitialInput={searchParams?.product}
+            />
           </CardContent>
         </Card>
       </main>

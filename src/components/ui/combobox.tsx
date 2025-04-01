@@ -204,7 +204,7 @@ function Combobox<
   );
 }
 
-function CommandGroupContent({
+export function CommandGroupContent({
   items,
   value,
   onSelect,
@@ -239,7 +239,7 @@ function CommandGroupContent({
   ));
 }
 
-function CommandGroupContentSkeleton() {
+export function CommandGroupContentSkeleton() {
   return Array.from(Array(5)).map((_, i) => (
     <CommandItem key={i} value={i.toString()} disabled>
       <Skeleton
