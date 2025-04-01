@@ -139,35 +139,35 @@ export async function addSale(
 //   }
 // }
 
-// export async function deleteSale(
-//   id: number
-// ): Promise<Omit<FormState<SaleValues>, 'values' | 'errors'>> {
-//   // Check if authorized
-//   const authorized = await isAuthorized('delete-sale');
-//   if (!authorized) {
-//     return {
-//       success: false,
-//       message: `You don't have permission to do that.`,
-//     };
-//   }
+export async function deleteSale(
+  id: number
+): Promise<Omit<FormState<SaleValues>, 'values' | 'errors'>> {
+  // Check if authorized
+  const authorized = await isAuthorized('delete-sale');
+  if (!authorized) {
+    return {
+      success: false,
+      message: `You don't have permission to do that.`,
+    };
+  }
 
-//   // Delete sale
-//   try {
-//     const message = await db.sales.deleteById(id);
+  // Delete sale
+  try {
+    const message = await db.sales.deleteById(id);
 
-//     revalidateTag('sales');
+    revalidateTag('sales');
 
-//     return {
-//       message,
-//       success: true,
-//     };
-//   } catch {
-//     return {
-//       message: 'Internal server error. Failed to delete sale.',
-//       success: false,
-//     };
-//   }
-// }
+    return {
+      message,
+      success: true,
+    };
+  } catch {
+    return {
+      message: 'Internal server error. Failed to delete sale.',
+      success: false,
+    };
+  }
+}
 
 export const autocompleteProducts = async (): Promise<ProductActionItem[]> => {
   const products = await db.products.getAll();

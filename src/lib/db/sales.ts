@@ -25,3 +25,15 @@ export const create = async (data: CreateSaleDTO): Promise<string> => {
 
   return 'New sale has been added.';
 };
+
+export const deleteById = async (id: number): Promise<string> => {
+  await dbConnect();
+
+  const response = await SaleModel.deleteOne({ id });
+
+  if (response.deletedCount === 0) {
+    return `Sale with id ${id} could not be deleted! It may not exists.`;
+  }
+
+  return `Sale with id ${id} has been deleted.`;
+};

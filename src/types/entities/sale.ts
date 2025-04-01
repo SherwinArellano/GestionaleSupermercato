@@ -1,7 +1,11 @@
+import { Product } from './product';
+
 export interface SaleProduct {
   id: number; // id of product
   quantity: number;
 }
+
+export type PSaleProduct = Omit<SaleProduct, 'id'> & Product;
 
 export interface Sale {
   id: number;
@@ -14,3 +18,5 @@ export interface Sale {
 export type CreateSaleDTO = Omit<Sale, 'id' | 'receiptCode'>;
 
 export type UpdateSaleDTO = CreateSaleDTO;
+
+export type PSale = Omit<Sale, 'products'> & { products: PSaleProduct[] };
