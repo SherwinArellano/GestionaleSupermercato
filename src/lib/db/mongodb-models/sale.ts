@@ -1,5 +1,13 @@
-import { Sale } from '@/types/db';
+import { Sale, SaleProduct } from '@/types/db';
 import mongoose from 'mongoose';
+
+const saleProductSchema = new mongoose.Schema<SaleProduct>(
+  {
+    id: Number,
+    quantity: Number,
+  },
+  { _id: false }
+);
 
 const saleSchema = new mongoose.Schema<Sale>({
   id: {
@@ -9,7 +17,7 @@ const saleSchema = new mongoose.Schema<Sale>({
   receiptCode: String,
   totalPrice: Number,
   saleDate: Date,
-  products: [Number],
+  products: [saleProductSchema],
 });
 
 export const SaleModel: mongoose.Model<Sale> =

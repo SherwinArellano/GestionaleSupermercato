@@ -14,8 +14,9 @@ import { revalidateTag } from 'next/cache';
 
 const extractRawValues: ExtractRawValues<SaleValues> = (formData) => {
   return {
-    saleDate: formData.get('arrivalDate')?.toString(),
+    saleDate: formData.get('saleDate')?.toString(),
     products: formData.get('products')?.toString(),
+    totalPrice: formData.get('totalPrice')?.toString(),
   };
 };
 
@@ -24,6 +25,7 @@ const extractValues: ExtractValues<SaleValues> = (rawData) => {
   return {
     saleDate: rawData.saleDate ? new Date(rawData.saleDate) : dateNow,
     products: JSON.parse(rawData.products ?? '[]'),
+    totalPrice: Number(rawData.totalPrice) || 0,
   };
 };
 
@@ -32,6 +34,7 @@ const getEmptyValues: GetEmptyValues<SaleValues> = () => {
   return {
     saleDate: dateNow,
     products: [],
+    totalPrice: 0,
   };
 };
 
@@ -44,7 +47,7 @@ export async function addSale(
   const values = extractValues(rawData);
 
   // Validate values
-  const validatedFields = SaleSchema.safeParse(rawData);
+  const validatedFields = SaleSchema.safeParse(values);
   if (!validatedFields.success) {
     return {
       success: false,
@@ -66,16 +69,7 @@ export async function addSale(
 
   // Create sale
   try {
-    const products = values.products;
-
-    const message = await db.sales.create({
-      productsIds: products.map(({ id }) => id),
-      saleDate: values.saleDate,
-      totalPrice: products.reduce(
-        (amount, { sellingPrice }) => amount + sellingPrice,
-        0
-      ),
-    });
+    const message = await db.sales.create(values);
 
     revalidateTag('sales');
 
@@ -84,7 +78,8 @@ export async function addSale(
       success: true,
       values: getEmptyValues(),
     };
-  } catch {
+  } catch (e) {
+    console.error(e);
     return {
       values,
       success: false,

@@ -1,8 +1,13 @@
+export interface SaleProduct {
+  id: number; // id of product
+  quantity: number;
+}
+
 export interface Sale {
   id: number;
   totalPrice: number;
   saleDate: Date;
-  productsIds: number[];
+  products: SaleProduct[];
   receiptCode: string;
 }
 

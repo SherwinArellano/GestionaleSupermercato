@@ -1,7 +1,13 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { addSale } from './actions';
 import { SaleSchema, SaleValues } from '@/lib/entities/sale';
@@ -12,7 +18,15 @@ import { useForm } from '@/hooks/use-form';
 import { DatePicker } from '../../form-input';
 import { Input } from '../../input';
 import { Package, Receipt, X } from 'lucide-react';
-import React, { useEffect, useState, useTransition } from 'react';
+import React, {
+  Ref,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { Popover, PopoverAnchor, PopoverContent } from '../../popover';
 import {
   CommandEmpty,
@@ -24,7 +38,7 @@ import { Command as CommandPrimitive } from 'cmdk';
 import { CommandGroupContentSkeleton } from '../../combobox';
 import { useDebouncedCallback } from 'use-debounce';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { Product } from '@/types/db';
+import { Product, SaleProduct } from '@/types/db';
 import {
   Table,
   TableBody,
@@ -33,6 +47,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../table';
+import { Label } from '../../label';
 
 const resolver = zodResolver(SaleSchema);
 
@@ -43,6 +58,7 @@ const initialFormState: FormState<SaleValues> = {
   values: {
     saleDate: dateNow,
     products: [],
+    totalPrice: 0,
   },
 };
 
@@ -57,6 +73,8 @@ export type ProductAction = (
   formData: FormData
 ) => Promise<ProductActionItem[]>;
 
+type ProductsInputRef = { reset: () => void };
+
 export function AddSaleForm({
   productsAction,
   productsInitialInput,
@@ -64,6 +82,7 @@ export function AddSaleForm({
   productsAction: ProductAction;
   productsInitialInput?: string;
 }) {
+  const productsInputRef = useRef<ProductsInputRef>(null);
   const { form, formAction, isPending } = useForm({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: resolver as any,
@@ -71,6 +90,7 @@ export function AddSaleForm({
     initialState: initialFormState,
     onSuccess: ({ message }, form) => {
       form.reset();
+      productsInputRef.current?.reset();
       toast('Sale added', {
         icon: <Receipt />,
         description: message,
@@ -95,6 +115,7 @@ export function AddSaleForm({
             <ProductsInput
               action={productsAction}
               initialInput={productsInitialInput}
+              ref={productsInputRef}
             />
           )}
         />
@@ -110,22 +131,51 @@ export function AddSaleForm({
   );
 }
 
+type SaleProductTableItem = Product & { quantityString: string };
+
 function ProductsInput({
   action,
   initialInput,
+  ref,
 }: {
   action: ProductAction;
   initialInput?: string;
+  ref?: Ref<ProductsInputRef>;
 }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [search, setSearch] = useState(initialInput ?? '');
   const [items, formAction, isPending] = React.useActionState(action, []);
   const startTransition = useTransition()[1];
-  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<
+    SaleProductTableItem[]
+  >([]);
+
+  const saleProductsJSON = useMemo<string>(
+    () =>
+      JSON.stringify(
+        selectedProducts.map<SaleProduct>(({ id, quantityString }) => ({
+          id,
+          quantity: Number(quantityString) || 0,
+        }))
+      ),
+    [selectedProducts]
+  );
+
+  const totalPrice = useMemo<number>(
+    () =>
+      selectedProducts.reduce((amount, product) => {
+        const quantity = Number(product.quantityString) || 0;
+        return amount + quantity * product.sellingPrice;
+      }, 0),
+    [selectedProducts]
+  );
 
   const handleSelect = (product: Product) => {
-    setSelectedProducts((products) => [...products, product]);
+    setSelectedProducts((products) => [
+      { quantityString: '1', ...product },
+      ...products,
+    ]);
     setSearch('');
 
     const params = new URLSearchParams(searchParams);
@@ -154,6 +204,20 @@ function ProductsInput({
     setSelectedProducts((products) => products.filter((p) => p.id !== id));
   };
 
+  const handleProductQuantityChange = (
+    productId: number,
+    quantityString: string
+  ) => {
+    setSelectedProducts((products) => {
+      const updatedProduct = products.find(({ id }) => productId === id);
+      if (!updatedProduct) return products;
+      updatedProduct.quantityString = quantityString;
+      return products.map((product) =>
+        product.id === productId ? updatedProduct : product
+      );
+    });
+  };
+
   useEffect(() => {
     startTransition(() => {
       const formData = new FormData();
@@ -162,6 +226,14 @@ function ProductsInput({
     });
   }, [formAction, search, startTransition]);
 
+  useImperativeHandle(ref, () => {
+    return {
+      reset() {
+        setSelectedProducts([]);
+      },
+    };
+  });
+
   const filteredItems = items.filter(
     ({ product }) => !selectedProducts.find(({ id }) => id === product.id)
   );
@@ -169,6 +241,8 @@ function ProductsInput({
   return (
     <FormItem>
       <FormLabel>Add Products</FormLabel>
+      <input type="hidden" name="products" value={saleProductsJSON} />
+      <input type="hidden" name="totalPrice" value={totalPrice} />
       <Popover open={search !== ''} modal={false}>
         <CommandPrimitive loop shouldFilter={false}>
           <PopoverAnchor>
@@ -208,11 +282,12 @@ function ProductsInput({
         </CommandPrimitive>
       </Popover>
 
-      <div className="rounded-md border">
+      <div className="mt-2 rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="pl-3">Product</TableHead>
+              <TableHead className="w-[120px] pl-3">Quantity</TableHead>
+              <TableHead>Product</TableHead>
               <TableHead className="pr-3 text-right">Amount</TableHead>
               <TableHead className="w-[32px]"></TableHead>
             </TableRow>
@@ -220,7 +295,7 @@ function ProductsInput({
           <TableBody>
             {selectedProducts.length === 0 && (
               <TableRow>
-                <TableCell colSpan={3} className="h-72">
+                <TableCell colSpan={4} className="h-72">
                   <span className="flex justify-center gap-2.5">
                     No selected products yet.
                   </span>
@@ -229,7 +304,23 @@ function ProductsInput({
             )}
             {selectedProducts.map((product) => (
               <TableRow key={product.id}>
-                <TableCell className="pl-3">{product.name}</TableCell>
+                <TableHead className="w-[120px] pl-3">
+                  <Input
+                    type="number"
+                    step={1}
+                    className="text-primary"
+                    value={product.quantityString}
+                    min={0}
+                    placeholder="0"
+                    onKeyDown={(e) =>
+                      ['e', '.', '-'].includes(e.key) && e.preventDefault()
+                    }
+                    onChange={(e) =>
+                      handleProductQuantityChange(product.id, e.target.value)
+                    }
+                  />
+                </TableHead>
+                <TableCell>{product.name}</TableCell>
                 <TableCell className="pr-3 text-right">
                   €{(product.sellingPrice / 100).toFixed(2)}
                 </TableCell>
@@ -247,6 +338,13 @@ function ProductsInput({
             ))}
           </TableBody>
         </Table>
+      </div>
+      <FormMessage />
+
+      <div>
+        <Label className="mt-2">
+          Total Price: €{(totalPrice / 100).toFixed(2)}
+        </Label>
       </div>
     </FormItem>
   );
