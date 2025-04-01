@@ -1,13 +1,11 @@
-import { Product } from './product';
-
 export interface Sale {
   id: number;
   totalPrice: number;
   saleDate: Date;
-  products: Product[];
+  productsIds: number[];
   receiptCode: string;
 }
 
-export type CreateSaleDTO = Omit<Sale, 'id'>;
+export type CreateSaleDTO = Omit<Sale, 'id' | 'receiptCode'>;
 
 export type UpdateSaleDTO = CreateSaleDTO;

@@ -25,7 +25,7 @@ const OPERATOR_CODE_LENGTH = 32;
 const ALPHANUMERIC =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-export const generateOperatorCode = () => {
+export const generateCode = () => {
   let result = '';
   for (let i = 0; i < OPERATOR_CODE_LENGTH; i++) {
     const randomIndex = crypto.randomInt(0, ALPHANUMERIC.length);

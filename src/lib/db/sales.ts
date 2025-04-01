@@ -1,6 +1,7 @@
 import { CreateSaleDTO, Sale } from '@/types/db';
 import { dbConnect } from '../mongodbConnect';
 import { SaleModel } from './mongodb-models/sale';
+import { generateCode } from '../utils';
 
 export const get = async (): Promise<Sale[]> => {
   await dbConnect();
@@ -18,6 +19,7 @@ export const create = async (data: CreateSaleDTO): Promise<string> => {
 
   await SaleModel.create({
     id: highestId + 1,
+    receiptCode: generateCode(),
     ...data,
   } satisfies Sale);
 

@@ -3,7 +3,7 @@
 import { CreateUserDTO, UpdateUserDTO, User } from '@/types/entities/user';
 import { dbConnect } from '../mongodbConnect';
 import { UserModel } from './mongodb-models/user';
-import { generateOperatorCode } from '../utils';
+import { generateCode } from '../utils';
 import { HydratedDocument, ObjectId, ProjectionType } from 'mongoose';
 
 // For now I'm hardcoding accounts since backend authentication is currently in development.
@@ -128,7 +128,7 @@ export const create = async (data: CreateUserDTO): Promise<string> => {
   // Since I don't know what's the plan for users yet, here's what I think:
   // A user without a password is a user that hasn't registered yet.
   await UserModel.create({
-    operatorCode: generateOperatorCode(),
+    operatorCode: generateCode(),
     password: '',
     ...data,
   } satisfies User);
