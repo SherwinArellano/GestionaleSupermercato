@@ -17,6 +17,6 @@ export interface Sale {
 
 export type CreateSaleDTO = Omit<Sale, 'id' | 'receiptCode'>;
 
-export type UpdateSaleDTO = CreateSaleDTO;
+export type UpdateSaleDTO = Omit<Sale, 'id'>;
 
 export type PSale = Omit<Sale, 'products'> & { products: PSaleProduct[] };

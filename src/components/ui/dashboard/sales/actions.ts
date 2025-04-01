@@ -89,55 +89,59 @@ export async function addSale(
   }
 }
 
-// export async function updateSale(
-//   id: number,
-//   prevState: FormState<SaleValues>,
-//   formData: FormData
-// ): Promise<FormState<SaleValues>> {
-//   // Extract and normalize form values
-//   const rawData = extractRawValues(formData);
-//   const values = extractValues(rawData);
+export async function updateSale(
+  id: number,
+  prevState: FormState<SaleValues>,
+  formData: FormData
+): Promise<FormState<SaleValues>> {
+  // Extract and normalize form values
+  const rawData = extractRawValues(formData);
+  const values = extractValues(rawData);
 
-//   // Validate values
-//   const validatedFields = SaleSchema.safeParse(rawData);
-//   if (!validatedFields.success) {
-//     return {
-//       success: false,
-//       message: 'Missing or invalid fields. Failed to update sale.',
-//       values,
-//       errors: formatZodErrors(validatedFields.error),
-//     };
-//   }
+  // Validate values
+  const validatedFields = SaleSchema.safeParse(values);
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: 'Missing or invalid fields. Failed to update sale.',
+      values,
+      errors: formatZodErrors(validatedFields.error),
+    };
+  }
 
-//   // Check if authorized
-//   const authorized = await isAuthorized('edit-sale');
-//   if (!authorized) {
-//     return {
-//       values,
-//       success: false,
-//       message: `You don't have permission to do that.`,
-//     };
-//   }
+  // Check if authorized
+  const authorized = await isAuthorized('edit-sale');
+  if (!authorized) {
+    return {
+      values,
+      success: false,
+      message: `You don't have permission to do that.`,
+    };
+  }
 
-//   // Update sale
-//   try {
-//     const message = await db.sales.updateById(id, validatedFields.data);
+  // Update sale
+  try {
+    const sale = (await db.sales.getById(id))!;
+    const message = await db.sales.updateById(id, {
+      receiptCode: sale.receiptCode,
+      ...values,
+    });
 
-//     revalidateTag('sales');
+    revalidateTag('sales');
 
-//     return {
-//       message,
-//       success: true,
-//       values: getEmptyValues(),
-//     };
-//   } catch {
-//     return {
-//       values,
-//       success: false,
-//       message: 'Internal server error. Failed to update sale.',
-//     };
-//   }
-// }
+    return {
+      message,
+      success: true,
+      values: getEmptyValues(),
+    };
+  } catch {
+    return {
+      values,
+      success: false,
+      message: 'Internal server error. Failed to update sale.',
+    };
+  }
+}
 
 export async function deleteSale(
   id: number
