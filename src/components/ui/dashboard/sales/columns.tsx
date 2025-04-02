@@ -36,6 +36,7 @@ import { checkPermission } from '@/authorization';
 import { useActionForm } from '@/hooks/use-form';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { currencyFormatter } from '@/lib/utils';
 
 export type SaleSkeleton = Record<keyof PSale, number>;
 
@@ -65,6 +66,38 @@ const [columns, skeletonColumns] = new ColumnsBuilder<PSale, SaleSkeleton>()
         <Skeleton
           className="ml-3 h-5"
           style={{ width: row.original.saleDate }}
+        />
+      ),
+    }
+  )
+  .addColumn(
+    {
+      accessorKey: 'totalPrice',
+      header: (context) => (
+        <SortTableHead
+          title="Total Amount"
+          value="totalPrice"
+          desc={getHeadSortState(context)}
+          className="-mr-3 text-right"
+          number
+        />
+      ),
+      cell: ({ row }) => {
+        const amount = parseFloat(row.getValue('totalPrice'));
+        const formatted = currencyFormatter.format(amount);
+
+        return <div className="text-right">{formatted}</div>;
+      },
+    },
+    {
+      accessorKey: 'totalPrice',
+      header: () => (
+        <SortTableHeadSkeleton title="Total Amount" className="-mr-3" number />
+      ),
+      cell: ({ row }) => (
+        <Skeleton
+          className="h-5 text-right"
+          style={{ width: row.original.totalPrice }}
         />
       ),
     }

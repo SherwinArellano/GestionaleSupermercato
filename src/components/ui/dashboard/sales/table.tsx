@@ -22,6 +22,7 @@ export async function SalesTable({
   let isError = false;
 
   try {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     // For now, this is getting all sales.
     const response = await db.sales.get();
 
