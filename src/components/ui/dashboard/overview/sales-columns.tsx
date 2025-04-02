@@ -4,66 +4,69 @@ import { format } from 'date-fns';
 import { ColumnsBuilder } from '../../data-table';
 import { currencyFormatter } from '@/lib/utils';
 import { Skeleton } from '../../skeleton';
+import { Sale } from '@/types/db';
 
-export type Sale = {
-  id: number;
-  date: Date;
-  amount: number;
-};
+export type OverviewSale = Pick<
+  Sale,
+  'receiptCode' | 'saleDate' | 'totalPrice'
+>;
 
 export type SaleSkeleton = {
-  [P in keyof Sale]: number;
+  [P in keyof OverviewSale]: number;
 };
 
-const [columns, skeletonColumns] = new ColumnsBuilder<Sale, SaleSkeleton>()
+const [columns, skeletonColumns] = new ColumnsBuilder<
+  OverviewSale,
+  SaleSkeleton
+>()
   .addColumn(
     {
-      accessorKey: 'id',
-      header: 'ID',
-    },
-    {
-      accessorKey: 'id',
-      header: 'ID',
-      cell: ({ row }) => (
-        <Skeleton className="h-5" style={{ width: row.original.id }} />
-      ),
-    }
-  )
-  .addColumn(
-    {
-      accessorKey: 'date',
+      accessorKey: 'saleDate',
       header: 'Date',
       cell: ({ row }) => {
-        const date = new Date(row.getValue('date'));
+        const date = new Date(row.getValue('saleDate'));
         const formatted = format(date, 'P');
 
         return formatted;
       },
     },
     {
-      accessorKey: 'date',
+      accessorKey: 'saleDate',
       header: 'Date',
       cell: ({ row }) => (
-        <Skeleton className="h-5" style={{ width: row.original.date }} />
+        <Skeleton className="h-5" style={{ width: row.original.saleDate }} />
       ),
     }
   )
   .addColumn(
     {
-      accessorKey: 'amount',
+      accessorKey: 'receiptCode',
+      header: 'Receipt Code',
+    },
+    {
+      accessorKey: 'receiptCode',
+      header: 'Receipt Code',
+      cell: ({ row }) => (
+        <Skeleton className="h-5" style={{ width: row.original.receiptCode }} />
+      ),
+    }
+  )
+  .addColumn(
+    {
+      accessorKey: 'totalPrice',
       header: () => <div className="text-right">Total Amount</div>,
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue('amount'));
+        const amount = parseFloat(row.getValue('totalPrice'));
         const formatted = currencyFormatter.format(amount);
 
         return <div className="text-right font-medium">{formatted}</div>;
       },
     },
     {
-      accessorKey: 'amount',
+      accessorKey: 'totalPrice',
       header: () => <div className="text-right">Total Amount</div>,
       cell: ({ row }) => (
-        <Skeleton className="h-5" style={{ width: row.original.amount }} />
+        <Skeleton className="h-5" style={{ width: row.original.totalPrice }} />
       ),
     }
   )

@@ -12,6 +12,16 @@ export const get = async (): Promise<Sale[]> => {
   return sales;
 };
 
+export const getSortedByDate = async (): Promise<Sale[]> => {
+  await dbConnect();
+
+  const sales = await SaleModel.find({}, { _id: 0 })
+    .sort({ saleDate: -1 })
+    .lean();
+
+  return sales;
+};
+
 export const create = async (data: CreateSaleDTO): Promise<string> => {
   await dbConnect();
 

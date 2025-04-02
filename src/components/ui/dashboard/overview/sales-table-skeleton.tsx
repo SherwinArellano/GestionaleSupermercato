@@ -5,9 +5,9 @@ import { SaleSkeleton, skeletonColumns } from './sales-columns';
 
 export function SalesTableSkeleton() {
   const data = Array.from(Array(10)).map<SaleSkeleton>(() => ({
-    id: 50,
-    date: 70,
-    amount: Math.floor(Math.random() * 25 + 40),
+    receiptCode: 70,
+    saleDate: 70,
+    totalPrice: Math.floor(Math.random() * 25 + 40),
   }));
 
   return (

@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 
 type QueryParams = {
   productPage?: string;
+  salePage?: string;
 };
 
 export default async function OverviewPage(props: {
@@ -37,8 +38,11 @@ export default async function OverviewPage(props: {
               <CardTitle className="text-base">Recent Sales</CardTitle>
             </CardHeader>
             <CardContent>
-              <Suspense fallback={<SalesTableSkeleton />}>
-                <SalesTable />
+              <Suspense
+                key={searchParams?.salePage}
+                fallback={<SalesTableSkeleton />}
+              >
+                <SalesTable currentPage={Number(searchParams?.salePage) || 1} />
               </Suspense>
             </CardContent>
           </Card>
