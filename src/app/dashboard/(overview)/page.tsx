@@ -48,7 +48,10 @@ export default async function OverviewPage(props: {
               <CardTitle className="text-base">Low Stock Products</CardTitle>
             </CardHeader>
             <CardContent>
-              <Suspense fallback={<ProductsTableSkeleton />}>
+              <Suspense
+                key={searchParams?.productPage}
+                fallback={<ProductsTableSkeleton />}
+              >
                 <ProductsTable
                   currentPage={Number(searchParams?.productPage) || 1}
                 />
