@@ -105,6 +105,24 @@ export function SignUpForm({
                 <>
                   <FormField
                     control={form.control}
+                    name="email"
+                    disabled
+                    render={({ field }) => (
+                      <FormItem className="mb-4">
+                        <FormLabel>Email</FormLabel>
+                        <input
+                          type="hidden"
+                          name={field.name}
+                          value={field.value}
+                        />
+                        <Input type="email" {...field} />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem className="mb-4">
