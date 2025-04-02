@@ -89,6 +89,13 @@ export function SignUpForm({
                       placeholder="e.g. 728930040aa476f94153be3c561ab548"
                       {...field}
                     />
+                    {state.isSetPassword && (
+                      <input
+                        type="hidden"
+                        name={field.name}
+                        value={field.value}
+                      />
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
