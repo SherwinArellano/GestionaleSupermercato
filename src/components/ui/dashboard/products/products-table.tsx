@@ -36,7 +36,11 @@ export async function ProductsTable({
       };
     });
 
-    totalPages = Math.ceil(products.length / 20);
+    totalPages = Math.ceil(
+      products.filter((p) =>
+        p.name.toLowerCase().includes(search.toLowerCase())
+      ).length / 20
+    );
   } catch (e) {
     if (isAxiosError(e) && e.code === 'ECONNREFUSED') {
       isError = true;

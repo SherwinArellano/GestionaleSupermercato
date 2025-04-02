@@ -25,7 +25,12 @@ export async function SuppliersTable({
     // For now, this is getting all suppliers.
     const response = await db.suppliers.get();
     suppliers = response.data;
-    totalPages = Math.ceil(suppliers.length / 20);
+
+    totalPages = Math.ceil(
+      suppliers.filter((s) =>
+        s.name.toLowerCase().includes(search.toLowerCase())
+      ).length / 20
+    );
   } catch (e) {
     if (isAxiosError(e) && e.code === 'ECONNREFUSED') {
       isError = true;

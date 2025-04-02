@@ -50,7 +50,11 @@ export async function SalesTable({
       ...sale,
     }));
 
-    totalPages = Math.ceil(sales.length / 20);
+    totalPages = Math.ceil(
+      sales.filter((s) =>
+        s.receiptCode.toLowerCase().includes(search.toLowerCase())
+      ).length / 20
+    );
   } catch (e) {
     if (isAxiosError(e) && e.code === 'ECONNREFUSED') {
       isError = true;

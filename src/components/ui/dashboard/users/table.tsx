@@ -24,7 +24,10 @@ export async function UsersTable({
   try {
     // For now, this is getting all users.
     users = await db.users.get();
-    totalPages = Math.ceil(users.length / 20);
+    totalPages = Math.ceil(
+      users.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()))
+        .length / 20
+    );
   } catch (e) {
     if (isAxiosError(e) && e.code === 'ECONNREFUSED') {
       isError = true;

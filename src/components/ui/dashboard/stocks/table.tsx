@@ -49,7 +49,11 @@ export async function StocksTable({
       })
     );
 
-    totalPages = Math.ceil(stocks.length / 20);
+    totalPages = Math.ceil(
+      stocks.filter((s) =>
+        s.product.name.toLowerCase().includes(search.toLowerCase())
+      ).length / 20
+    );
   } catch (e) {
     if (isAxiosError(e) && e.code === 'ECONNREFUSED') {
       isError = true;
