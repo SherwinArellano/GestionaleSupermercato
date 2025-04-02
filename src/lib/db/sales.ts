@@ -22,6 +22,17 @@ export const getSortedByDate = async (): Promise<Sale[]> => {
   return sales;
 };
 
+export const getOverallPrice = async (): Promise<number> => {
+  await dbConnect();
+
+  const response = await SaleModel.aggregate<{ overallPrice: number }>().group({
+    _id: null,
+    overallPrice: { $sum: '$totalPrice' },
+  });
+
+  return response[0].overallPrice;
+};
+
 export const create = async (data: CreateSaleDTO): Promise<string> => {
   await dbConnect();
 

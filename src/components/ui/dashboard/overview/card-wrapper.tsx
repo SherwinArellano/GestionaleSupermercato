@@ -9,11 +9,28 @@ import { unstable_cacheTag as cacheTag } from 'next/cache';
 export async function CardWrapper() {
   return (
     <>
-      <OverviewCard title="Total Sales" icon={Banknote} value={0} isCurrency />
+      <SalesOverviewCard />
       <ProductsOverviewCard />
       <SuppliersOverviewCard />
       <UsersOverviewCard />
     </>
+  );
+}
+
+async function SalesOverviewCard() {
+  'use cache';
+
+  cacheTag('sales');
+
+  const totalPrice = await db.sales.getOverallPrice();
+
+  return (
+    <OverviewCard
+      title="Total Sales"
+      icon={Banknote}
+      value={totalPrice}
+      isCurrency
+    />
   );
 }
 
