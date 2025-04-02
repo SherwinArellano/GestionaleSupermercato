@@ -24,12 +24,17 @@ export async function ProductsTable({
     const products = await db.products.getAll();
 
     // Populate quantities
-    const map = await db.stocks.groupByLatestInfo();
+    const stocksMap = await db.stocks.groupByLatestInfo();
+    const salesMap = await db.sales.groupBySaleProducts();
 
-    tableProducts = products.map((product) => ({
-      quantity: map.get(product.id)?.totalQuantity ?? 0,
-      ...product,
-    }));
+    tableProducts = products.map((product) => {
+      const totalStock = stocksMap.get(product.id)?.totalQuantity ?? 0;
+      const totalSale = salesMap.get(product.id) ?? 0;
+      return {
+        quantity: totalStock - totalSale,
+        ...product,
+      };
+    });
 
     totalPages = Math.ceil(products.length / 20);
   } catch (e) {

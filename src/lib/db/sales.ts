@@ -33,6 +33,32 @@ export const getOverallPrice = async (): Promise<number> => {
   return response[0].overallPrice;
 };
 
+export const groupBySaleProducts = async (): Promise<Map<number, number>> => {
+  await dbConnect();
+
+  const elements = await SaleModel.aggregate<{
+    productId: number;
+    totalSales: number;
+  }>()
+    .unwind('products')
+    .group({
+      _id: '$products.id',
+      totalSales: { $sum: '$products.quantity' },
+    })
+    .project({
+      _id: 0,
+      productId: '$_id',
+      totalSales: 1,
+    });
+
+  const map = new Map<number, number>();
+  elements.forEach(({ productId, totalSales }) =>
+    map.set(productId, totalSales)
+  );
+
+  return map;
+};
+
 export const create = async (data: CreateSaleDTO): Promise<string> => {
   await dbConnect();
 
