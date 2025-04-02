@@ -22,13 +22,19 @@ async function SalesOverviewCard() {
 
   cacheTag('sales');
 
-  const totalPrice = await db.sales.getOverallPrice();
+  let overallPrice: number;
+
+  try {
+    overallPrice = await db.sales.getOverallPrice();
+  } catch {
+    overallPrice = 0;
+  }
 
   return (
     <OverviewCard
       title="Total Sales"
       icon={Banknote}
-      value={totalPrice}
+      value={overallPrice}
       isCurrency
     />
   );
@@ -69,7 +75,13 @@ async function SuppliersOverviewCard() {
 
   cacheTag('suppliers');
 
-  const { totalElements: suppliersCount } = await db.suppliers.get();
+  let suppliersCount: number;
+
+  try {
+    suppliersCount = (await db.suppliers.get()).totalElements;
+  } catch {
+    suppliersCount = 0;
+  }
 
   return (
     <OverviewCard
@@ -85,9 +97,15 @@ async function UsersOverviewCard() {
 
   cacheTag('users');
 
-  const users = await db.users.get();
+  let usersCount: number;
 
-  return <OverviewCard title="Total Users" icon={Users} value={users.length} />;
+  try {
+    usersCount = (await db.users.get()).length;
+  } catch {
+    usersCount = 0;
+  }
+
+  return <OverviewCard title="Total Users" icon={Users} value={usersCount} />;
 }
 
 function OverviewCard(props: {
