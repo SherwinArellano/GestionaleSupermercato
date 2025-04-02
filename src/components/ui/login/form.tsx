@@ -94,6 +94,17 @@ export function LoginForm({
                         <Input type="password" {...field} />
                       </FormControl>
                       <FormMessage />
+                      <div>
+                        <span
+                          role="button"
+                          onClick={() => {
+                            toast.info('Ask admins for a password reset.');
+                          }}
+                          className="shrink cursor-pointer text-sm underline-offset-4 hover:underline"
+                        >
+                          Forgot password?
+                        </span>
+                      </div>
                     </FormItem>
                   )}
                 />
