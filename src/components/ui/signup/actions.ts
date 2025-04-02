@@ -27,6 +27,7 @@ const extractValues: ExtractValues<SignUpValues> = (rawData) => {
 
 export type SignUpFormState = FormState<SignUpValues> & {
   isSetPassword: boolean;
+  registeredSuccessfully?: boolean;
 };
 
 export async function signup(
@@ -103,6 +104,7 @@ export async function signup(
       message: 'User successfully registered. You may now log in.',
       success: true,
       isSetPassword: true,
+      registeredSuccessfully: true,
       values,
     };
   } catch {

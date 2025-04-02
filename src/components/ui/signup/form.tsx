@@ -44,14 +44,16 @@ export function SignUpForm({
     state: rawState,
     form,
     formAction,
+    isPending,
   } = useForm({
     resolver,
     initialState,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     action: signup as any,
-    onSuccess: ({ message }) => {
+    onSuccess: (rawState) => {
+      const { message, registeredSuccessfully } = rawState as SignUpFormState;
       toast.success(message);
-      redirect('/login');
+      if (registeredSuccessfully) redirect('/login');
     },
     onError: ({ message }) => {
       toast.warning(message);
@@ -78,6 +80,7 @@ export function SignUpForm({
               <FormField
                 control={form.control}
                 name="operatorCode"
+                disabled={state.isSetPassword}
                 render={({ field }) => (
                   <FormItem className="mb-4">
                     <FormLabel>Operator Code</FormLabel>
@@ -123,8 +126,12 @@ export function SignUpForm({
                 </>
               )}
 
-              <Button type="submit" className="mt-2 w-full cursor-pointer">
-                Sign Up
+              <Button
+                type="submit"
+                className="mt-2 w-full cursor-pointer"
+                disabled={isPending}
+              >
+                {isPending ? 'Signing up...' : 'Sign Up'}
               </Button>
 
               <div className="mt-4 text-center text-sm">
