@@ -42,6 +42,35 @@ export type SaleSkeleton = Record<keyof PSale, number>;
 const [columns, skeletonColumns] = new ColumnsBuilder<PSale, SaleSkeleton>()
   .addColumn(
     {
+      accessorKey: 'saleDate',
+      header: (context) => (
+        <SortTableHead
+          title="Date"
+          value="saleDate"
+          desc={getHeadSortState(context)}
+          number
+        />
+      ),
+      cell: ({ row }) => {
+        const date = new Date(row.getValue('saleDate'));
+        const formatted = format(date, 'P');
+
+        return <div className="ml-3">{formatted}</div>;
+      },
+    },
+    {
+      accessorKey: 'saleDate',
+      header: () => <SortTableHeadSkeleton title="Date" number />,
+      cell: ({ row }) => (
+        <Skeleton
+          className="ml-3 h-5"
+          style={{ width: row.original.saleDate }}
+        />
+      ),
+    }
+  )
+  .addColumn(
+    {
       accessorKey: 'receiptCode',
       header: (context) => (
         <SortTableHead
@@ -82,25 +111,6 @@ const [columns, skeletonColumns] = new ColumnsBuilder<PSale, SaleSkeleton>()
       header: 'Products',
       cell: ({ row }) => (
         <Skeleton className={`h-6`} style={{ width: row.original.products }} />
-      ),
-    }
-  )
-  .addColumn(
-    {
-      accessorKey: 'saleDate',
-      header: 'Date',
-      cell: ({ row }) => {
-        const date = new Date(row.getValue('saleDate'));
-        const formatted = format(date, 'P');
-
-        return formatted;
-      },
-    },
-    {
-      accessorKey: 'saleDate',
-      header: 'Date',
-      cell: ({ row }) => (
-        <Skeleton className="h-5" style={{ width: row.original.saleDate }} />
       ),
     }
   )

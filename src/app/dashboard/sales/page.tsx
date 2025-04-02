@@ -88,8 +88,8 @@ async function Suspended({
   const now = Date.now();
 
   const search = searchParams?.search ?? '';
-  const order = searchParams?.order ?? 'asc';
-  const sort = searchParams?.sort ?? 'receiptCode';
+  const order = searchParams?.order ?? 'desc';
+  const sort = searchParams?.sort ?? 'saleDate';
   const currentPage = Number(searchParams?.page) || 1;
 
   return (
