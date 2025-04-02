@@ -34,7 +34,7 @@ async function SalesOverviewCard() {
     <OverviewCard
       title="Total Sales"
       icon={Banknote}
-      value={overallPrice}
+      value={overallPrice / 100}
       isCurrency
     />
   );

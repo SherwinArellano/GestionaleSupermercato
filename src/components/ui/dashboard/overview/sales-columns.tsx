@@ -57,7 +57,7 @@ const [columns, skeletonColumns] = new ColumnsBuilder<
       header: () => <div className="text-right">Total Amount</div>,
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue('totalPrice'));
-        const formatted = currencyFormatter.format(amount);
+        const formatted = currencyFormatter.format(amount / 100);
 
         return <div className="text-right font-medium">{formatted}</div>;
       },

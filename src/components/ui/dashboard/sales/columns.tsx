@@ -84,7 +84,7 @@ const [columns, skeletonColumns] = new ColumnsBuilder<PSale, SaleSkeleton>()
       ),
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue('totalPrice'));
-        const formatted = currencyFormatter.format(amount);
+        const formatted = currencyFormatter.format(amount / 100);
 
         return <div className="text-right">{formatted}</div>;
       },
